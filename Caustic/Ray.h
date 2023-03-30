@@ -10,6 +10,7 @@ namespace Caustic
 	class Ray
 	{
 	public:
+		Ray();
 		Ray(const Vec3& origin, const Vec3& direction, float tMin = 0.0f, float tMax = INFINITY, int depth = 0)
 		: m_Origin(origin), m_Direction(direction), m_TMin(tMin), m_TMax(tMax), m_Depth(depth)
 		{
