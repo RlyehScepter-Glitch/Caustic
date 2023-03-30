@@ -20,6 +20,10 @@ namespace Caustic
 		void setY(float y) { this->y = y; }
 		void setZ(float z) { this->z = z; }
 
+		//Static vector operations
+		static float Dot(const Vec3& v1, const Vec3& v2);
+		static Vec3 Cross(const Vec3& v1, const Vec3& v2);
+
 		//Vector operations
 		float Length() const;
 		void Normalize();
