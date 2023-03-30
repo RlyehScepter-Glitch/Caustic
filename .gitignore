@@ -4,3 +4,6 @@
 
 /.vs/Caustic
 /Caustic/Caustic.vcxproj.user
+/bin/Debug-x64/&(ProjectName)
+/bin-int/Debug-x64/&(ProjectName)
+/Caustic/Homework.ppm
