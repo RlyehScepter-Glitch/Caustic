@@ -55,22 +55,23 @@ int main()
 			rayDir.Normalize();
 			
 			Caustic::Ray R(origin, rayDir);
+			float t;
 
-			if(T1.Intersect(R, hitRecord))
+			if(T1.Intersect(R, t))
 			{
-				ppmFileStream << 255 << " " << 0 << " " << abs(hitRecord.m_IntersectionPoint.GetZ() * 255) << "\t";
+				ppmFileStream << 255 << " " << 0 << " " << 255 << "\t";
 			}
-			else if(T2.Intersect(R, hitRecord))
+			else if(T2.Intersect(R, t))
 			{
-				ppmFileStream << 0 << " " << 255 << " " << abs(hitRecord.m_IntersectionPoint.GetZ() * 255) << "\t";
+				ppmFileStream << 0 << " " << 255 << " " << 255 << "\t";
 			}
-			else if(T3.Intersect(R, hitRecord))
+			else if(T3.Intersect(R, t))
 			{
-				ppmFileStream << 0 << " " << abs(hitRecord.m_IntersectionPoint.GetY() * 255) << " " << 255 << "\t";
+				ppmFileStream << 0 << " " << 255 << " " << 255 << "\t";
 			}
-			else if(T4.Intersect(R, hitRecord))
+			else if(T4.Intersect(R, t))
 			{
-				ppmFileStream << 255 << " " << abs(hitRecord.m_IntersectionPoint.GetY() * 255) << " " << 0 << "\t";
+				ppmFileStream << 255 << " " << 255 << " " << 0 << "\t";
 			}
 			else
 			{
