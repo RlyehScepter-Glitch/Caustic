@@ -11,14 +11,14 @@ namespace Caustic
 		Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
 		//Getters
-		float getX() const { return x; }
-		float getY() const { return y; }
-		float getZ() const { return z; }
+		float GetX() const { return x; }
+		float GetY() const { return y; }
+		float GetZ() const { return z; }
 
 		//Setters
-		void setX(float x) { this->x = x; }
-		void setY(float y) { this->y = y; }
-		void setZ(float z) { this->z = z; }
+		void SetX(float x) { this->x = x; }
+		void SetY(float y) { this->y = y; }
+		void SetZ(float z) { this->z = z; }
 
 		//Static vector operations
 		static float Dot(const Vec3& v1, const Vec3& v2);
