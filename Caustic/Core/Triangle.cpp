@@ -1,4 +1,7 @@
 #include "Triangle.h"
+#include "Vec3.h"
+#include "Ray.h"
+
 #include <limits>
 
 namespace Caustic
@@ -15,12 +18,12 @@ namespace Caustic
         m_Normal.Normalize();
     }
 
-    bool Triangle::Intersect(const Vec3& origin, const Vec3& direction, float& t) const
+    bool Triangle::Intersect(const Ray& ray, float& t) const
     {
         // Calculate intersection using Moller-Trumbore algorithm
         Vec3 edge1 = m_V1 - m_V0;
         Vec3 edge2 = m_V2 - m_V0;
-        Vec3 h = Vec3::Cross(direction, edge2);
+        Vec3 h = Vec3::Cross(ray.GetDirection(), edge2);
         float determinant = Vec3::Dot(edge1, h);
         if (determinant > -EPSILON && determinant < EPSILON)
         {
@@ -29,7 +32,7 @@ namespace Caustic
         }
 
         float invDet = 1.0f / determinant;
-        Vec3 distance = origin - m_V0;
+        Vec3 distance = ray.GetOrigin() - m_V0;
         float u = invDet * Vec3::Dot(distance, h);
         if (u < 0 || u > 1)
         {
@@ -38,7 +41,7 @@ namespace Caustic
         }
 
         Vec3 q = Vec3::Cross(distance, edge1);
-        float v = invDet * Vec3::Dot(direction, q);
+        float v = invDet * Vec3::Dot(ray.GetDirection(), q);
         if (v < 0 || u + v > 1)
         {
             // Intersection is outside the triangle
