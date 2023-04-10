@@ -1,6 +1,6 @@
-#include "Vec3.h"
-#include "Ray.h"
-#include "Triangle.h"
+#include "Core/Vec3.h"
+#include "Core/Ray.h"
+#include "Core/Triangle.h"
 
 #include <fstream>
 #include <math.h>
