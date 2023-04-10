@@ -55,27 +55,26 @@ int main()
 			rayDir.Normalize();
 			
 			Caustic::Ray R(origin, rayDir);
-			Caustic::HitRecord hitRecord;
 
 			if(T1.Intersect(R, hitRecord))
 			{
-				ppmFileStream << 255 << " " << 0 << " " << abs(hitRecord.m_IntersectionPoint.getZ() * 255) << "\t";
+				ppmFileStream << 255 << " " << 0 << " " << abs(hitRecord.m_IntersectionPoint.GetZ() * 255) << "\t";
 			}
 			else if(T2.Intersect(R, hitRecord))
 			{
-				ppmFileStream << 0 << " " << 255 << " " << abs(hitRecord.m_IntersectionPoint.getZ() * 255) << "\t";
+				ppmFileStream << 0 << " " << 255 << " " << abs(hitRecord.m_IntersectionPoint.GetZ() * 255) << "\t";
 			}
 			else if(T3.Intersect(R, hitRecord))
 			{
-				ppmFileStream << 0 << " " << abs(hitRecord.m_IntersectionPoint.getY() * 255) << " " << 255 << "\t";
+				ppmFileStream << 0 << " " << abs(hitRecord.m_IntersectionPoint.GetY() * 255) << " " << 255 << "\t";
 			}
 			else if(T4.Intersect(R, hitRecord))
 			{
-				ppmFileStream << 255 << " " << abs(hitRecord.m_IntersectionPoint.getY() * 255) << " " << 0 << "\t";
+				ppmFileStream << 255 << " " << abs(hitRecord.m_IntersectionPoint.GetY() * 255) << " " << 0 << "\t";
 			}
 			else
 			{
-				ppmFileStream << abs(rayDir.getX() * 255) << " " << abs(rayDir.getY() * 255) << " " << abs(rayDir.getZ() * 255) << "\t";
+				ppmFileStream << abs(rayDir.GetX() * 255) << " " << abs(rayDir.GetY() * 255) << " " << abs(rayDir.GetZ() * 255) << "\t";
 			}
 		}
 

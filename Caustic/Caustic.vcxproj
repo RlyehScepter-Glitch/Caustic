@@ -84,13 +84,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\Mat4.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Ray.cpp" />
     <ClCompile Include="Core\Triangle.cpp" />
     <ClCompile Include="Core\Vec3.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\HitRecord.h" />
+    <ClInclude Include="Core\Mat4.h" />
     <ClInclude Include="Core\Ray.h" />
     <ClInclude Include="Core\Triangle.h" />
     <ClInclude Include="Core\Vec3.h" />

@@ -27,6 +27,9 @@
     <ClCompile Include="Core\Triangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Mat4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Vec3.h">
@@ -38,7 +41,7 @@
     <ClInclude Include="Core\Triangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\HitRecord.h">
+    <ClInclude Include="Core\Mat4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
