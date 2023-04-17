@@ -1,8 +1,12 @@
 #pragma once
 
+#include "Vec3.h"
+#include "Ray.h"
+
 namespace Caustic
 {
-    class Triangle {
+    class Triangle 
+    {
     public:
         Triangle(const Vec3& v0, const Vec3& v1, const Vec3& v2);
 

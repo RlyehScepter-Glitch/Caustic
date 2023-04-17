@@ -14,7 +14,7 @@ namespace Caustic
         , m_V2(v2)
     {
         // Calculate surface normal
-        m_Normal = Vec3::Cross(m_V1 - m_V0, m_V2 - m_V0);
+        m_Normal = Vec3::Cross(v1 - v0, v2 - v0);
         m_Normal.Normalize();
     }
 
