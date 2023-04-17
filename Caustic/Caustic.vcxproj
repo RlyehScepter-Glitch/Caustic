@@ -91,6 +91,7 @@
     <ClCompile Include="Core\Vec3.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Camera.h" />
     <ClInclude Include="Core\Mat4.h" />
     <ClInclude Include="Core\Ray.h" />
     <ClInclude Include="Core\Triangle.h" />
