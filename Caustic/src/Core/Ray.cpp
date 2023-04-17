@@ -2,17 +2,17 @@
 
 namespace Caustic
 {
-	Vec3 Ray::PointAt(float distance) const
+	glm::vec3 Ray::PointAt(float distance) const
 	{
 		return m_Origin + m_Direction * distance;
 	}
 	
-	Vec3 Ray::GetOrigin() const
+	glm::vec3 Ray::GetOrigin() const
 	{
 		return m_Origin;
 	}
 	
-	Vec3 Ray::GetDirection() const
+	glm::vec3 Ray::GetDirection() const
 	{
 		return m_Direction;
 	}
