@@ -1,6 +1,6 @@
-#include "Core/Vec3.h"
 #include "Core/Ray.h"
 #include "Core/Triangle.h"
+#include "glm/glm.hpp"
 
 #include <fstream>
 #include <math.h>
@@ -17,12 +17,12 @@ int main()
 	ppmFileStream << imageWidth << " " << imageHeight << "\n";
 	ppmFileStream << maxColorComponent << "\n";
 
-	Caustic::Vec3 origin(0.0f, 0.5f, 0.0f);
-	Caustic::Vec3 P1(-1.0f, 0.0f, -2.0f);
-	Caustic::Vec3 P2(0.0f, 0.0f, -1.0f);
-	Caustic::Vec3 P3(1.0f, 0.0f, -2.0f);
-	Caustic::Vec3 P4(0.0f, 0.0f, -3.0f);
-	Caustic::Vec3 P5(0.0f, 1.0f, -2.0f);
+	glm::vec3 origin(0.0f, 0.5f, 0.0f);
+	glm::vec3 P1(-1.0f, 0.0f, -2.0f);
+	glm::vec3 P2(0.0f, 0.0f, -1.0f);
+	glm::vec3 P3(1.0f, 0.0f, -2.0f);
+	glm::vec3 P4(0.0f, 0.0f, -3.0f);
+	glm::vec3 P5(0.0f, 1.0f, -2.0f);
 
 	Caustic::Triangle T1(P1, P2, P5);
 	Caustic::Triangle T2(P2, P3, P5);
@@ -51,9 +51,9 @@ int main()
 			//Aspect ratio
 			tempX *= imageWidth / imageHeight;
 			
-			Caustic::Vec3 rayDir(tempX, tempY, -1);
-			rayDir.Normalize();
-			
+			glm::vec3 rayDir(tempX, tempY, -1);
+			rayDir = glm::normalize(rayDir);
+
 			Caustic::Ray R(origin, rayDir);
 			float t = 0.0f;
 
@@ -75,7 +75,7 @@ int main()
 			}
 			else
 			{
-				ppmFileStream << abs(rayDir.GetX() * 255) << " " << abs(rayDir.GetY() * 255) << " " << abs(rayDir.GetZ() * 255) << "\t";
+				ppmFileStream << abs(rayDir.x * 255) << " " << abs(rayDir.y * 255) << " " << abs(rayDir.z * 255) << "\t";
 			}
 		}
 
