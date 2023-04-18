@@ -20,7 +20,7 @@ namespace Caustic
         void SetAspectRatio(float aspectRatio);
         void SetFOV(float fov);
 
-        // 
+        // Movement functions
         void Dolly(float distance);
         void Truck(float distance);
         void Pedestal(float distance);

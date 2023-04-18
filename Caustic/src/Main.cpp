@@ -1,5 +1,6 @@
 #include "Core/Ray.h"
 #include "Core/Triangle.h"
+#include "Core/Camera.h"
 #include "glm/glm.hpp"
 
 #include <fstream>
@@ -12,23 +13,41 @@ static const int maxColorComponent = 255;
 
 int main() 
 {
+	// Camera settings
+	glm::vec3 cameraOrigin(0.0f, 0.0f, 0.0f);
+	glm::vec3 cameraDirection(0.0f, 0.0f, -1.0f);
+	glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+	float aspectRatio = 1920 / 1080;
+
+	// Camera
+	Caustic::Camera(cameraOrigin, cameraDirection, cameraUp, 80, aspectRatio);
+	
+	// Vertices
+	glm::vec3 vertices[]
+	{
+		{ -1.0f, 0.0f, -2.0f },
+		{  0.0f, 0.0f, -1.0f },
+		{  1.0f, 0.0f, -2.0f },
+		{  0.0f, 0.0f, -3.0f },
+		{  0.0f, 1.0f, -2.0f }
+	};
+
+	// Triangles
+	Caustic::Triangle triangles[]
+	{
+		{ vertices[1], vertices[2], vertices[5] },
+		{ vertices[2], vertices[3], vertices[5] },
+		{ vertices[3], vertices[4], vertices[5] },
+		{ vertices[4], vertices[1], vertices[5] }
+	};
+
+	// Open Filestream
 	std::ofstream ppmFileStream("HomeworkNo5.ppm", std::ios::out | std::ios::binary);
 	ppmFileStream << "P3\n";
 	ppmFileStream << imageWidth << " " << imageHeight << "\n";
 	ppmFileStream << maxColorComponent << "\n";
 
-	glm::vec3 origin(0.0f, 0.5f, 0.0f);
-	glm::vec3 P1(-1.0f, 0.0f, -2.0f);
-	glm::vec3 P2(0.0f, 0.0f, -1.0f);
-	glm::vec3 P3(1.0f, 0.0f, -2.0f);
-	glm::vec3 P4(0.0f, 0.0f, -3.0f);
-	glm::vec3 P5(0.0f, 1.0f, -2.0f);
-
-	Caustic::Triangle T1(P1, P2, P5);
-	Caustic::Triangle T2(P2, P3, P5);
-	Caustic::Triangle T3(P3, P4, P5);
-	Caustic::Triangle T4(P4, P1, P5);
-
+	// Render image
 	for (int y = 0; y < imageHeight; y++)
 	{
 		for (int x = 0; x < imageWidth; x++)
@@ -82,7 +101,9 @@ int main()
 		ppmFileStream << "\n";
 	}
 
+	// Close Filestream
 	ppmFileStream.close();
 
+	// End program
 	return 0;
 }
