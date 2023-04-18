@@ -10,6 +10,7 @@ namespace Caustic
     class Camera {
     public:
         // Constructor
+        // Takes in position(origin), target(direction), up vector(Y), FOV, Aspect Ration
         Camera(glm::vec3 position, glm::vec3 target, glm::vec3 up, float fov, float aspectRatio);
 
         // Getters
