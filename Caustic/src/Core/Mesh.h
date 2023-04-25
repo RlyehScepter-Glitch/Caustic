@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <iostream>
 #include <glm/glm.hpp>
 
 #include "Triangle.h"
@@ -12,9 +11,11 @@ namespace Caustic
     {
     public:
         // Constructors
-        Mesh(const std::string& path);
+        Mesh() = default;
 
         bool Intersect(const Ray& ray) const;
+
+        void PushTriangle(const Triangle& triangle);
     private:
         std::vector<Triangle> m_Triangles;
     };

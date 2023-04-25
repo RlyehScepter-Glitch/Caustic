@@ -2,14 +2,14 @@
 
 namespace Caustic
 {
-	// TBI
-	Mesh::Mesh(const std::string& path)
-	{
-	}
-
-
+	// TODO:: Implement Intersection function
 	bool Mesh::Intersect(const Ray& ray) const
 	{
 		return false;
+	}
+
+	void Mesh::PushTriangle(const Triangle& triangle)
+	{
+		m_Triangles.push_back(triangle);
 	}
 }
