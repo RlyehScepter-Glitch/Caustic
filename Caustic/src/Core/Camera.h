@@ -10,6 +10,8 @@ namespace Caustic
     class Camera {
     public:
         // Constructors
+        // Default
+        Camera() = default;
         // Takes in Postion and View
         Camera(const glm::vec3& position, const glm::mat4& view);
         // Takes in Postion, View, Width and Height
@@ -24,11 +26,15 @@ namespace Caustic
         Camera(const glm::vec3& position, const glm::vec3& direction, float fov, float nearClip, float farClip, uint32_t width, uint32_t height);
 
         // Getters
-        const glm::mat4& GetProjectionMatrix() const { return m_Projection; }
-        const glm::mat4& GetViewMatrix() const { return m_View; }
+        const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
+        const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
         
         const glm::vec3& GetPosition() const { return m_Position; }
         const glm::vec3& GetDirection() const { return m_Direction; }
+
+        // Setters
+        void SetViewMatrix(const glm::mat4& matrix);
+        void SetPosition(const glm::vec3& position);
 
         // Movement functions
         void Dolly(float distance);
@@ -39,8 +45,8 @@ namespace Caustic
         void Roll(float angle);
 
     private:
-        glm::mat4 m_Projection{ 1.0f };
-        glm::mat4 m_View{ 1.0f };
+        glm::mat4 m_ProjectionMatrix{ 1.0f };
+        glm::mat4 m_ViewMatrix{ 1.0f };
         
         float m_FOV = 45.0f;
         float m_NearClip = 0.1f;

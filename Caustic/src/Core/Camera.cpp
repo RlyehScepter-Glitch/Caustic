@@ -7,13 +7,13 @@ namespace Caustic
 {
 
     Camera::Camera(const glm::vec3& position, const glm::mat4& view)
-        : m_Position(position), m_View(view)
+        : m_Position(position), m_ViewMatrix(view)
     {
         
     }
 
     Camera::Camera(const glm::vec3& position, const glm::mat4& view, uint32_t width, uint32_t height)
-        : m_Position(position), m_View(view), m_Width(width), m_Height(height)
+        : m_Position(position), m_ViewMatrix(view), m_Width(width), m_Height(height)
     {
 
     }
@@ -42,6 +42,16 @@ namespace Caustic
 
     }
 
+    void Camera::SetViewMatrix(const glm::mat4& matrix)
+    {
+        m_ViewMatrix = matrix;
+    }
+
+    void Camera::SetPosition(const glm::vec3& position)
+    {
+        m_Position = position;
+    }
+
     void Camera::Dolly(float distance)
     {
         m_Position.z += distance;
@@ -59,16 +69,16 @@ namespace Caustic
 
     void Camera::Pan(float angle)
     {
-        m_View = glm::rotate(m_View, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+        m_ViewMatrix = glm::rotate(m_ViewMatrix, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
     }
 
     void Camera::Tilt(float angle)
     {
-        m_View = glm::rotate(m_View, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+        m_ViewMatrix = glm::rotate(m_ViewMatrix, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
     void Camera::Roll(float angle)
     {
-        m_View = glm::rotate(m_View, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+        m_ViewMatrix = glm::rotate(m_ViewMatrix, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
     }
 }
