@@ -9,17 +9,20 @@ namespace Caustic
 
     class Camera {
     public:
-        // Constructor
-        // Takes in position(origin), target(direction), up vector(Y), FOV, Aspect Ration
-        Camera(glm::vec3 position, glm::vec3 target, glm::vec3 up, float fov, float aspectRatio);
+        // Constructors
+        // Takes in Postion and View
+        Camera(const glm::vec3& position, const glm::mat4& view);
+        // Takes in Vertical FOV(in Degrees), Near Clip, Far Clip
+        Camera(float fov, float nearClip, float farClip);
+        // Takes in Camera Position, Camera Direction, Vertical FOV(in Degrees), Near Clip, Far Clip
+        Camera(const glm::vec3& position, const glm::vec3& direction, float fov, float nearClip, float farClip);
 
         // Getters
-        glm::mat4 GetViewMatrix() const;
-        glm::mat4 GetProjectionMatrix() const;
+        const glm::mat4& GetProjectionMatrix() const { return m_Projection; }
+        const glm::mat4& GetViewMatrix() const { return m_View; }
         
-        // Setters
-        void SetAspectRatio(float aspectRatio);
-        void SetFOV(float fov);
+        const glm::vec3& GetPosition() const { return m_Position; }
+        const glm::vec3& GetDirection() const { return m_Direction; }
 
         // Movement functions
         void Dolly(float distance);
@@ -29,19 +32,18 @@ namespace Caustic
         void Tilt(float angle);
         void Roll(float angle);
 
-
     private:
-        glm::vec3 m_Position;
-        glm::vec3 m_Direction;
-        glm::vec3 m_Up;
-        float m_Fov;
-        float m_AspectRatio;
+        glm::mat4 m_Projection{ 1.0f };
+        glm::mat4 m_View{ 1.0f };
+        
+        float m_FOV = 45.0f;
+        float m_NearClip = 0.1f;
+        float m_FarClip = 10.0f;
 
-        glm::vec3 m_Right;
-        glm::vec3 m_Front;
-        glm::vec3 m_WorldUp;
+        glm::vec3 m_Position { 0.0f, 0.0f, 0.0f };
+        glm::vec3 m_Direction { 0.0f, 0.0f, -1.0f };
 
-        void UpdateVectors();
+        uint32_t m_Width = 0, m_Height = 0;
     };
 
 }
