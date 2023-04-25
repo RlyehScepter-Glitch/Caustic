@@ -12,10 +12,16 @@ namespace Caustic
         // Constructors
         // Takes in Postion and View
         Camera(const glm::vec3& position, const glm::mat4& view);
+        // Takes in Postion, View, Width and Height
+        Camera(const glm::vec3& position, const glm::mat4& view, uint32_t width, uint32_t height);
         // Takes in Vertical FOV(in Degrees), Near Clip, Far Clip
         Camera(float fov, float nearClip, float farClip);
+        // Takes in Vertical FOV(in Degrees), Near Clip, Far Clip, Width and Height
+        Camera(float fov, float nearClip, float farClip, uint32_t width, uint32_t height);
         // Takes in Camera Position, Camera Direction, Vertical FOV(in Degrees), Near Clip, Far Clip
         Camera(const glm::vec3& position, const glm::vec3& direction, float fov, float nearClip, float farClip);
+        // Takes in Camera Position, Camera Direction, Vertical FOV(in Degrees), Near Clip, Far Clip, Width and Height
+        Camera(const glm::vec3& position, const glm::vec3& direction, float fov, float nearClip, float farClip, uint32_t width, uint32_t height);
 
         // Getters
         const glm::mat4& GetProjectionMatrix() const { return m_Projection; }
@@ -43,7 +49,7 @@ namespace Caustic
         glm::vec3 m_Position { 0.0f, 0.0f, 0.0f };
         glm::vec3 m_Direction { 0.0f, 0.0f, -1.0f };
 
-        uint32_t m_Width = 0, m_Height = 0;
+        uint32_t m_Width = 1920, m_Height = 1080;
     };
 
 }
