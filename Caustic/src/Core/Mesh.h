@@ -15,6 +15,8 @@ namespace Caustic
 
         bool Intersect(const Ray& ray) const;
 
+        const std::vector<Triangle>& GetTriangles() const { return m_Triangles; }
+
         void PushTriangle(const Triangle& triangle);
     private:
         std::vector<Triangle> m_Triangles;
