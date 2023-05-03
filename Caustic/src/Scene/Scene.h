@@ -19,6 +19,7 @@ namespace Caustic
 		//Getters
 		const Camera& GetCamera() const { return m_Camera; }
 		const Settings& GetSettings() const { return m_Settings; }
+		const std::vector<Mesh>& GetObjects() const { return m_Objects; }
 
 	private:
 		void ParseSceneFile(const std::string& sceneFileName);

@@ -7,6 +7,9 @@
 
 namespace Caustic
 {
+	rapidjson::Document GetJsonDocument(const std::string& sceneFileName);
+	glm::vec3 LoadVector(const rapidjson::Value::ConstArray& arr);
+	glm::mat3 LoadMatrix(const rapidjson::Value::ConstArray& arr);
 
 	Scene::Scene(const std::string& sceneFileName)
 	{
