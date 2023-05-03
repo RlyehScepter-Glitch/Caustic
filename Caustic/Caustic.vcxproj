@@ -86,10 +86,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Mat4.cpp" />
-    <ClCompile Include="Core\Ray.cpp" />
-    <ClCompile Include="Core\Triangle.cpp" />
-    <ClCompile Include="Core\Vec3.cpp" />
     <ClCompile Include="src\Core\Camera.cpp" />
     <ClCompile Include="src\Core\Mesh.cpp" />
     <ClCompile Include="src\Core\Ray.cpp" />
@@ -99,11 +95,6 @@
     <ClCompile Include="src\Scene\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Camera.h" />
-    <ClInclude Include="Core\Mat4.h" />
-    <ClInclude Include="Core\Ray.h" />
-    <ClInclude Include="Core\Triangle.h" />
-    <ClInclude Include="Core\Vec3.h" />
     <ClInclude Include="src\Core\Camera.h" />
     <ClInclude Include="src\Core\Mesh.h" />
     <ClInclude Include="src\Core\Ray.h" />

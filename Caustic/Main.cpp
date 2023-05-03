@@ -1,8 +1,7 @@
-#include "src/Core/Ray.h"
-#include "src/Core/Triangle.h"
-#include "src/Core/Camera.h"
-#include "src/Core/Renderer.h"
-#include "src/Scene/Scene.h"
+#include "Core/Ray.h"
+#include "Core/Triangle.h"
+#include "Core/Camera.h"
+#include "Scene/Scene.h"
 
 #include <fstream>
 #include <rapidjson/rapidjson.h>
@@ -62,11 +61,11 @@ int main()
 				{
 					if(triangle.Intersect(R, t))
 					{
-						ppmFileStream << 200 << " " << 200 << " " << 0 << "\t";
+						ppmFileStream << R.GetDirection().x * 255 << " " << R.GetDirection().y * 255 << " " << 1 - R.GetDirection().x * 255 << "\t";
 					}
 					else
 					{
-						ppmFileStream << background.r << " " << background.g << " " << background.b << "\t";
+						ppmFileStream << background.r * 255 << " " << background.g * 255 << " " << background.b * 255 << "\t";
 					}
 				}
 			}
