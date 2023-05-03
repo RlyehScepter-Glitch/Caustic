@@ -13,6 +13,11 @@ namespace Caustic
 		//Takes Background Color, Width and Height
 		Settings(const glm::vec3& backgroundColor, uint32_t width, uint32_t height);
 
+		//Getters
+		glm::vec3 GetBackgroundColor() { return m_BackgroundColor; }
+		uint32_t GetWidth() { return m_Width; }
+		uint32_t GetHeight() { return m_Height; }
+
 		//Setters
 		void SetBackgroundColor(const glm::vec3& bgColor);
 		void SetWidth(uint32_t width);
