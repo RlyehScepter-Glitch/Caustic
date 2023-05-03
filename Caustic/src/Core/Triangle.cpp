@@ -15,9 +15,10 @@ namespace Caustic
     {
         // Calculate surface normal
         m_Normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+        m_Color = glm::normalize(glm::vec3(abs(v0.x + v1.y), abs(v1.y + v2.z), abs(v2.z + v0.x)));
     }
 
-    bool Triangle::Intersect(const Ray& ray, float& t) const
+    bool Triangle::Intersect(const Ray& ray, float t) const
     {
         // Calculate intersection using Moller-Trumbore algorithm
         glm::vec3 edge1 = m_V1 - m_V0;
