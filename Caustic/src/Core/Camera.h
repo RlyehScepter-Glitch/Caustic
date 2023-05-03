@@ -49,8 +49,8 @@ namespace Caustic
         glm::mat4 m_ViewMatrix{ 1.0f };
         
         float m_FOV = 45.0f;
-        float m_NearClip = 0.1f;
-        float m_FarClip = 10.0f;
+        float m_NearClip = 0.0f;
+        float m_FarClip = 100.0f;
 
         glm::vec3 m_Position { 0.0f, 0.0f, 0.0f };
         glm::vec3 m_Direction { 0.0f, 0.0f, -1.0f };

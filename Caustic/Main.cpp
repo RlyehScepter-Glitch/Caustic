@@ -4,21 +4,27 @@
 #include "Scene/Scene.h"
 
 #include <fstream>
+#include <iostream>
 #include <rapidjson/rapidjson.h>
 #include <glm/glm.hpp>
 #include <math.h>
 
 static const int maxColorComponent = 255;
 
+//TODO: REWRITE RAY-TRIANGLE INTERSECTION METHOD
+
 int main() 
 {
 	// Scene
-	Caustic::Scene scene("resources/scene0.crtscene");
+	Caustic::Scene scene("resources/scene2.crtscene");
 	Caustic::Settings sceneSettings = scene.GetSettings();
 	uint32_t sceneWidth = sceneSettings.GetWidth();
 	uint32_t sceneHeight = sceneSettings.GetHeight();
 	float aspectRatio = sceneWidth / sceneHeight;
 	glm::vec3 background = scene.GetSettings().GetBackgroundColor();
+	float bgR = background.r;
+	float bgG = background.g;
+	float bgB = background.b;
 
 	// Open Filestream
 	std::ofstream ppmFileStream("Homework.ppm", std::ios::out | std::ios::binary);
@@ -27,9 +33,9 @@ int main()
 	ppmFileStream << maxColorComponent << "\n";
 
 	// Render image
-	for (int y = 0; y < sceneHeight; y++)
+	for (uint32_t y = 0; y < sceneHeight; y++)
 	{
-		for (int x = 0; x < sceneWidth; x++)
+		for (uint32_t x = 0; x < sceneWidth; x++)
 		{
 			float tempX = x;
 			float tempY = y;
@@ -55,22 +61,41 @@ int main()
 			Caustic::Ray R(scene.GetCamera().GetPosition(), rayDir);
 			float t = 0.0f;
 			
-			for (auto mesh : scene.GetObjects())
+			bool hitTriangle = false;
+			bool hitMesh = false;
+
+			for (const Caustic::Mesh& mesh : scene.GetObjects())
 			{
-				for (auto triangle : mesh.GetTriangles())
+				if(hitMesh)
+				{
+					break;
+				}
+
+				for (const Caustic::Triangle& triangle : mesh.GetTriangles())
 				{
 					if(triangle.Intersect(R, t))
 					{
-						ppmFileStream << R.GetDirection().x * 255 << " " << R.GetDirection().y * 255 << " " << 1 - R.GetDirection().x * 255 << "\t";
+						ppmFileStream << triangle.GetColor().r * 255 << " " << triangle.GetColor().g * 255 << " " << triangle.GetColor().b * 255 << " \t";
+						hitTriangle = true;
+						hitMesh = true;
+						break;
 					}
-					else
-					{
-						ppmFileStream << background.r * 255 << " " << background.g * 255 << " " << background.b * 255 << "\t";
-					}
+					
 				}
-			}
 
-			//ppmFileStream << R << " " << G << " " << B << "\t";
+				if(hitTriangle)
+				{
+					hitTriangle = false;
+					break;
+				}
+				
+			}
+			
+			if (!hitMesh)
+			{
+				ppmFileStream << bgR * 255 << " " << bgG * 255 << " " << bgB * 255 << " \t";
+			}
+			
 		}
 
 		ppmFileStream << "\n";
