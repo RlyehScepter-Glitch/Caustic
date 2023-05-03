@@ -26,17 +26,19 @@ namespace Caustic
 		{
 			//Parse Color value
 			const rapidjson::Value& colorValue = settingsValue.FindMember("background_color")->value;
+			assert(!colorValue.IsNull() && settingsValue.IsObject());
+			m_Settings.SetBackgroundColor(LoadVector(colorValue.GetArray()));
 
 			//Parse image Width and Height values
 			const rapidjson::Value& imageSettignsValue = settingsValue.FindMember("image_settings")->value;
-			const rapidjson::Value& widthValue = imageSettignsValue.FindMember("width")->value;
-			const rapidjson::Value& heightValue = imageSettignsValue.FindMember("height")->value;
-
-			//Set values inside Settings
-			m_Settings.SetBackgroundColor(LoadVector(colorValue.GetArray()));
-			m_Settings.SetWidth(widthValue.GetFloat());
-			m_Settings.SetHeight(heightValue.GetFloat());
-
+			if(!imageSettignsValue.IsNull() && imageSettignsValue.IsObject())
+			{
+				const rapidjson::Value& widthValue = imageSettignsValue.FindMember("width")->value;
+				const rapidjson::Value& heightValue = imageSettignsValue.FindMember("height")->value;
+				assert(!widthValue.IsNull() && widthValue.IsInt() && !heightValue.IsNull() && heightValue.IsInt());
+				m_Settings.SetWidth(widthValue.GetFloat());
+				m_Settings.SetHeight(heightValue.GetFloat());
+			}
 		}
 
 		//Parse Camera values
@@ -44,24 +46,28 @@ namespace Caustic
 		if (!cameraValue.IsNull() && cameraValue.IsObject())
 		{
 			//Parse Matrix value
-			const rapidjson::Value& matrixValue = doc.FindMember("matrix")->value;
+			const rapidjson::Value& matrixValue = cameraValue.FindMember("matrix")->value;
+			assert(!matrixValue.IsNull() && matrixValue.IsArray());
+			m_Camera.SetViewMatrix(LoadMatrix(matrixValue.GetArray()));
 
 			//Parse Position value
-			const rapidjson::Value& posValue = doc.FindMember("position")->value;
-
-			//Set values inside Camera
-			m_Camera.SetViewMatrix(LoadMatrix(matrixValue.GetArray()));
+			const rapidjson::Value& posValue = cameraValue.FindMember("position")->value;
+			assert(!posValue.IsNull() && posValue.IsArray());
 			m_Camera.SetPosition(LoadVector(posValue.GetArray()));
 		}
 
 		//Parse Object values
 		const rapidjson::Value& objectsValue = doc.FindMember("objects")->value;
+		assert(!objectsValue.IsNull() && objectsValue.IsArray());
 		auto objectValueArray = objectsValue.GetArray();
+		
 		for (size_t obj = 0; obj < objectValueArray.Size(); obj++)
 		{
-			//Parse Veritces
-			const rapidjson::Value& verticesValue = doc.FindMember("vertices")->value;
+			//Parse Vertices
+			const rapidjson::Value& verticesValue = objectValueArray[obj].FindMember("vertices")->value;
+			assert(!verticesValue.IsNull() && verticesValue.IsArray());
 			auto vertexValuesArray = verticesValue.GetArray();
+			
 			std::vector<glm::vec3> vertices;
 			for (size_t i = 0; i < vertexValuesArray.Size(); i += 3)
 			{
@@ -70,7 +76,8 @@ namespace Caustic
 			}
 
 			//Parse Triangle Indices
-			const rapidjson::Value& indicesValue = doc.FindMember("triangles")->value;
+			const rapidjson::Value& indicesValue = objectValueArray[obj].FindMember("triangles")->value;
+			assert(!indicesValue.IsNull() && indicesValue.IsArray());
 			auto indices = indicesValue.GetArray();
 
 			//Set Mesh Values
