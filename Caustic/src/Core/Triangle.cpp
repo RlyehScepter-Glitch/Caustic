@@ -22,53 +22,6 @@ namespace Caustic
 
     bool Triangle::Intersect(const Ray& ray, float& t, float& u, float& v) const
     {
-        // Calculate intersection using Moller-Trumbore algorithm
-        glm::vec3 edge1 = m_V1 - m_V0;
-        glm::vec3 edge2 = m_V2 - m_V0;
-        glm::vec3 h = glm::cross(ray.GetDirection(), edge2);
-        
-        float determinant = glm::dot(edge1, h);
-        if (determinant > -kEpsilon && determinant < kEpsilon)
-        {
-            // Ray is parallel to the triangle plane
-            return false;
-        }
-
-        float invDet = 1.0f / determinant;
-        glm::vec3 distance = ray.GetOrigin() - m_V0;
-        u = invDet * glm::dot(distance, h);
-        if (u < 0 || u > 1)
-        {
-            // Intersection is outside the triangle
-            return false;
-        }
-
-        glm::vec3 q = glm::cross(distance, edge1);
-        v = invDet * glm::dot(ray.GetDirection(), q);
-        if (v < 0 || u + v > 1)
-        {
-            // Intersection is outside the triangle
-            return false;
-        }
-
-        t = invDet * glm::dot(edge2, q);
-
-        if (!t > 0)
-        {
-            return false;
-        }
-
-        if (t > kEpsilon)
-        {
-            // Intersection is valid
-            return true;
-        }
-
-        return false;
-    }
-
-    bool Triangle::AlternativeIntersect(const Ray& ray, float& t, float& u, float& v) const
-    {
         glm::vec3 rayOrigin = ray.GetOrigin();
         glm::vec3 rayDirection = ray.GetDirection();
         glm::vec3 edge1 = m_V1 - m_V0;

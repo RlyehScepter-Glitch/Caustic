@@ -12,7 +12,6 @@ namespace Caustic
         Triangle(const glm::vec3 & v0, const glm::vec3& v1, const glm::vec3& v2);
 
         bool Intersect(const Ray& ray, float& t, float& u, float& v) const;
-        bool AlternativeIntersect(const Ray& ray, float& t, float& u, float& v) const;
 
         const glm::vec3 GetColor() const { return m_Color; }
     private:
