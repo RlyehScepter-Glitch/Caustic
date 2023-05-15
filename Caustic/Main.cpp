@@ -11,32 +11,34 @@
 
 static const int maxColorComponent = 255;
 
-//TODO: REWRITE RAY-TRIANGLE INTERSECTION METHOD
-
 int main() 
 {
 	// Scene
-	Caustic::Scene scene("resources/scene2.crtscene");
+	Caustic::Scene scene("resources/scene4.crtscene");
 	Caustic::Settings sceneSettings = scene.GetSettings();
 	uint32_t sceneWidth = sceneSettings.GetWidth();
 	uint32_t sceneHeight = sceneSettings.GetHeight();
-	float aspectRatio = sceneWidth / sceneHeight;
+	float aspectRatio = (float)sceneWidth / (float)sceneHeight;
 	glm::vec3 background = scene.GetSettings().GetBackgroundColor();
 	float bgR = background.r;
 	float bgG = background.g;
 	float bgB = background.b;
 
 	// Open Filestream
-	std::ofstream ppmFileStream("Homework.ppm", std::ios::out | std::ios::binary);
+	std::ofstream ppmFileStream("HomeworkDragon.ppm", std::ios::out | std::ios::binary);
 	ppmFileStream << "P3\n";
 	ppmFileStream << sceneWidth << " " << sceneHeight << "\n";
 	ppmFileStream << maxColorComponent << "\n";
+
+	// Create a two-dimensional array to represent the image
+	std::vector<std::vector<glm::vec3>> image(sceneHeight, std::vector<glm::vec3>(sceneWidth));
 
 	// Render image
 	for (uint32_t y = 0; y < sceneHeight; y++)
 	{
 		for (uint32_t x = 0; x < sceneWidth; x++)
 		{
+			//-----Ray Generation----//
 			float tempX = x;
 			float tempY = y;
 
@@ -56,48 +58,41 @@ int main()
 			tempX *= sceneWidth / sceneHeight;
 
 			glm::vec3 rayDir(tempX, tempY, -1);
-			rayDir = glm::normalize(rayDir);
+			rayDir = (glm::mat3)scene.GetCamera().GetViewMatrix() * glm::normalize(rayDir);
 
 			Caustic::Ray R(scene.GetCamera().GetPosition(), rayDir);
 			float t = 0.0f;
-			
-			bool hitTriangle = false;
-			bool hitMesh = false;
 
+			float tNear = FLT_MAX;
+			uint32_t triangleIndex;
+			glm::vec2 uv(0, 0);
+
+			glm::vec3 color(bgR, bgG, bgB);
+
+			//-----Ray Triangle Intersection-----//
 			for (const Caustic::Mesh& mesh : scene.GetObjects())
 			{
-				if(hitMesh)
+				if (mesh.Intersect(R, scene.GetCamera().GetNearClip(), tNear, triangleIndex, uv))
 				{
-					break;
+					Caustic::Triangle triangle = mesh.GetTriangles()[triangleIndex];
+					color = triangle.GetColor();
 				}
-
-				for (const Caustic::Triangle& triangle : mesh.GetTriangles())
-				{
-					if(triangle.Intersect(R, t))
-					{
-						ppmFileStream << triangle.GetColor().r * 255 << " " << triangle.GetColor().g * 255 << " " << triangle.GetColor().b * 255 << " \t";
-						hitTriangle = true;
-						hitMesh = true;
-						break;
-					}
-					
-				}
-
-				if(hitTriangle)
-				{
-					hitTriangle = false;
-					break;
-				}
-				
 			}
-			
-			if (!hitMesh)
-			{
-				ppmFileStream << bgR * 255 << " " << bgG * 255 << " " << bgB * 255 << " \t";
-			}
-			
+
+			image[y][x] = color;
 		}
 
+		
+	}
+
+	// Write the image to file
+	for (uint32_t y = 0; y < sceneHeight; y++)
+	{
+		for (uint32_t x = 0; x < sceneWidth; x++)
+		{
+			glm::vec3 color = image[y][x];
+			ppmFileStream << color.r * 255 << " " << color.g * 255 << " " << color.b * 255 << " \t";
+		}
 		ppmFileStream << "\n";
 	}
 
