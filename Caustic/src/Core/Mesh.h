@@ -13,7 +13,7 @@ namespace Caustic
         // Constructors
         Mesh() = default;
 
-        bool Intersect(const Ray& ray) const;
+        bool Intersect(const Ray& ray, float nearClip, float &tNear, uint32_t& triIndex, glm::vec2& uv) const;
 
         const std::vector<Triangle>& GetTriangles() const { return m_Triangles; }
 
