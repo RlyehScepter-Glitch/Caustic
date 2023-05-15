@@ -24,7 +24,6 @@ namespace Caustic
 		float GetTMin() const;
 		float GetTMax() const;
 		int GetDepth() const;
-
 	private:
 		glm::vec3 m_Origin;
 		glm::vec3 m_Direction;
