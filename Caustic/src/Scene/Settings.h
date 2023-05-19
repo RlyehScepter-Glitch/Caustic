@@ -24,9 +24,11 @@ namespace Caustic
 		void SetWidth(uint32_t width);
 		void SetHeight(uint32_t height);
 
+		void UpdateAspectRatio();
+
 	private:
 		glm::vec3 m_BackgroundColor = { 0.0f, 0.0f, 0.0f };
 		uint32_t m_Width = 1920, m_Height = 1080;
-		float m_AspectRatio = 16 / 9;
+		float m_AspectRatio = 16.0f / 9.0f;
 	};
 }

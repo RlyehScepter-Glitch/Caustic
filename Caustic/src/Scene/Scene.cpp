@@ -40,6 +40,7 @@ namespace Caustic
 				assert(!widthValue.IsNull() && widthValue.IsInt() && !heightValue.IsNull() && heightValue.IsInt());
 				m_Settings.SetWidth(widthValue.GetFloat());
 				m_Settings.SetHeight(heightValue.GetFloat());
+				m_Settings.UpdateAspectRatio();
 			}
 		}
 
