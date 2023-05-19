@@ -18,7 +18,7 @@ namespace Caustic
 
 	void Scene::ParseSceneFile(const std::string& sceneFileName)
 	{
-		rapidjson::Document doc = GetJsonDocument(sceneFileName);
+		const rapidjson::Document& doc = GetJsonDocument(sceneFileName);
 
 		//--------------------------------------------------------------------//
 		//---------------------------PARSE SETTINGS---------------------------//
@@ -148,17 +148,17 @@ namespace Caustic
 			for (int material = 0; material < materialsValueArray.Size(); material++)
 			{
 				//Parse Type value
-				const rapidjson::Value& typeValue = materialsValue.FindMember("type")->value;
+				const rapidjson::Value& typeValue = materialsValueArray[material].FindMember("type")->value;
 				assert(!typeValue.IsNull() && typeValue.IsString());
 				std::string type = typeValue.GetString();
 
 				//Parse Albedo
-				const rapidjson::Value& albedoValue = materialsValue.FindMember("albedo")->value;
+				const rapidjson::Value& albedoValue = materialsValueArray[material].FindMember("albedo")->value;
 				assert(!albedoValue.IsNull() && albedoValue.IsArray());
 				glm::vec3 albedo = LoadVector(albedoValue.GetArray());
 
 				//Parse SmoothShading
-				const rapidjson::Value& shadingValue = materialsValue.FindMember("smooth_shading")->value;
+				const rapidjson::Value& shadingValue = materialsValueArray[material].FindMember("smooth_shading")->value;
 				assert(!shadingValue.IsNull() && shadingValue.IsBool());
 				bool smoothShading = shadingValue.GetBool();
 
