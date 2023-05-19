@@ -21,7 +21,7 @@ namespace Caustic
         glm::vec3 m_V1;  // Second vertex
         glm::vec3 m_V2;  // Third vertex
         glm::vec3 m_Normal;  // Surface normal
-        glm::vec3 m_Color; // Albedo
+        glm::vec3 m_Color = { 1.0f, 1.0f, 1.0f }; // Color | Might remove later
         float m_Area;
     };
 

@@ -15,8 +15,6 @@ namespace Caustic
     {
         // Calculate surface normal
         m_Normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
-        m_Color = glm::normalize(glm::vec3(abs(v0.x + v1.y) * 0.5f + 0.5f, abs(v1.y + v2.z) * 0.5f + 0.5f, abs(v2.z + v0.x) * 0.5f + 0.5f));
-        //m_Albedo = glm::vec3(1.0f, 0.0f, 0.0f);
         m_Area = m_Normal.length() / 2.0f;
     }
 

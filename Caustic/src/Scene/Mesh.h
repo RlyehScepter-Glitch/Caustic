@@ -3,7 +3,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "Triangle.h"
+#include "Core/Triangle.h"
 
 namespace Caustic
 {

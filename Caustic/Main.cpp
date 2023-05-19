@@ -92,7 +92,7 @@ int main()
 						float sphereArea = 4.0f * glm::pi<float>() * sphereRad * sphereRad;
 
 						float lightIntensity = light.GetIntensity();
-						glm::vec3 triangleAlbedo = triangle.GetAlbedo();
+						glm::vec3 triangleColor = triangle.GetColor();
 
 						Caustic::Ray shadowRay(hitPoint + triangle.GetNormal() * shadowBias, lightDir);
 
@@ -112,7 +112,7 @@ int main()
 
 						if (shadowRayIntersect == false)
 						{
-							lightContribution = lightIntensity / sphereArea * triangleAlbedo * cosLaw;
+							lightContribution = lightIntensity / sphereArea * triangleColor * cosLaw;
 						}
 
 						finalColor += lightContribution;
