@@ -87,6 +87,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Camera.cpp" />
+    <ClCompile Include="src\Core\Light.cpp" />
     <ClCompile Include="src\Core\Mesh.cpp" />
     <ClCompile Include="src\Core\Ray.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
@@ -96,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Camera.h" />
+    <ClInclude Include="src\Core\Light.h" />
     <ClInclude Include="src\Core\Mesh.h" />
     <ClInclude Include="src\Core\Ray.h" />
     <ClInclude Include="src\Scene\Scene.h" />

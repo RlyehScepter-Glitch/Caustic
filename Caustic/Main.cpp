@@ -7,14 +7,16 @@
 #include <iostream>
 #include <rapidjson/rapidjson.h>
 #include <glm/glm.hpp>
-#include <math.h>
+#include <glm/gtc/constants.hpp>
+#include <algorithm>
 
 static const int maxColorComponent = 255;
+static const float shadowBias = 0.001f;
 
 int main() 
 {
 	// Scene
-	Caustic::Scene scene("resources/scene4.crtscene");
+	Caustic::Scene scene("resources/scene3.crtscene");
 	Caustic::Settings sceneSettings = scene.GetSettings();
 	uint32_t sceneWidth = sceneSettings.GetWidth();
 	uint32_t sceneHeight = sceneSettings.GetHeight();
@@ -55,7 +57,7 @@ int main()
 			tempY = 1.0f - (2.0f * tempY);
 
 			//Aspect ratio
-			tempX *= sceneWidth / sceneHeight;
+			tempX *= aspectRatio;
 
 			glm::vec3 rayDir(tempX, tempY, -1);
 			rayDir = (glm::mat3)scene.GetCamera().GetViewMatrix() * glm::normalize(rayDir);
@@ -67,19 +69,60 @@ int main()
 			uint32_t triangleIndex;
 			glm::vec2 uv(0, 0);
 
-			glm::vec3 color(bgR, bgG, bgB);
+			glm::vec3 backgroundColor(bgR, bgG, bgB);
 
 			//-----Ray Triangle Intersection-----//
+			// Check every Mesh for intersection with Camera Ray
 			for (const Caustic::Mesh& mesh : scene.GetObjects())
 			{
 				if (mesh.Intersect(R, scene.GetCamera().GetNearClip(), tNear, triangleIndex, uv))
 				{
 					Caustic::Triangle triangle = mesh.GetTriangles()[triangleIndex];
-					color = triangle.GetColor();
+					glm::vec3 hitPoint = R.GetOrigin() + R.GetDirection() * tNear;
+
+					glm::vec3 finalColor(0.0f, 0.0f, 0.0f);
+
+					// Check every light
+					for (const Caustic::Light& light : scene.GetLights())
+					{
+						glm::vec3 lightDir = light.GetPosition() - hitPoint;
+						float sphereRad = glm::length(lightDir);
+						lightDir = glm::normalize(lightDir);
+						float cosLaw = glm::max(0.0f, glm::dot(lightDir, triangle.GetNormal()));
+						float sphereArea = 4.0f * glm::pi<float>() * sphereRad * sphereRad;
+
+						float lightIntensity = light.GetIntensity();
+						glm::vec3 triangleAlbedo = triangle.GetAlbedo();
+
+						Caustic::Ray shadowRay(hitPoint + triangle.GetNormal() * shadowBias, lightDir);
+
+						glm::vec3 lightContribution(0.0f);
+						
+						bool shadowRayIntersect = false;
+
+						// Check if Shadow ray intersects anything
+						for (const Caustic::Mesh& meshAgain : scene.GetObjects())
+						{
+							if (meshAgain.ShadowIntersect(shadowRay))
+							{
+								shadowRayIntersect = true;
+								break;
+							}							
+						}
+
+						if (shadowRayIntersect == false)
+						{
+							lightContribution = lightIntensity / sphereArea * triangleAlbedo * cosLaw;
+						}
+
+						finalColor += lightContribution;
+					}
+
+					backgroundColor = finalColor;
 				}
 			}
 
-			image[y][x] = color;
+			image[y][x] = backgroundColor;
 		}
 
 		
@@ -91,7 +134,7 @@ int main()
 		for (uint32_t x = 0; x < sceneWidth; x++)
 		{
 			glm::vec3 color = image[y][x];
-			ppmFileStream << color.r * 255 << " " << color.g * 255 << " " << color.b * 255 << " \t";
+			ppmFileStream << std::clamp(color.r * 255.0f, 0.0f, 255.0f) << " " << std::clamp(color.g * 255.0f, 0.0f, 255.0f) << " " << std::clamp(color.b * 255.0f, 0.0f, 255.0f) << " \t";
 		}
 		ppmFileStream << "\n";
 	}
