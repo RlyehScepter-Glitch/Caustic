@@ -3,9 +3,11 @@
 
 int main() 
 {
-	// Scene
-	Caustic::Scene scene("resources/scene3.crtscene");
-	Caustic::Renderer::GenerateImage(scene);
+	// Create Scene
+	Caustic::Scene scene("resources/scene0.crtscene");
+
+	// Render Image
+	Caustic::Renderer::GenerateImage(scene, "Homework.ppm");
 
 	// End program
 	return 0;
