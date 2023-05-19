@@ -20,7 +20,9 @@ namespace Caustic
 	{
 		rapidjson::Document doc = GetJsonDocument(sceneFileName);
 
-		//Parse Settings values
+		//--------------------------------------------------------------------//
+		//---------------------------PARSE SETTINGS---------------------------//
+		//--------------------------------------------------------------------//
 		const rapidjson::Value& settingsValue = doc.FindMember("settings")->value;
 		if(!settingsValue.IsNull() && settingsValue.IsObject())
 		{
@@ -41,7 +43,9 @@ namespace Caustic
 			}
 		}
 
-		//Parse Camera values
+		//--------------------------------------------------------------------//
+		//----------------------------PARSE CAMERA----------------------------//
+		//--------------------------------------------------------------------//
 		const rapidjson::Value& cameraValue = doc.FindMember("camera")->value;
 		if (!cameraValue.IsNull() && cameraValue.IsObject())
 		{
@@ -56,7 +60,9 @@ namespace Caustic
 			m_Camera.SetPosition(LoadVector(posValue.GetArray()));
 		}
 
-		//Parse Object values
+		//--------------------------------------------------------------------//
+		//----------------------------PARSE MESHES----------------------------//
+		//--------------------------------------------------------------------//
 		const rapidjson::Value& objectsValue = doc.FindMember("objects")->value;
 		assert(!objectsValue.IsNull() && objectsValue.IsArray());
 		auto objectValueArray = objectsValue.GetArray();
@@ -80,8 +86,13 @@ namespace Caustic
 			assert(!indicesValue.IsNull() && indicesValue.IsArray());
 			auto indices = indicesValue.GetArray();
 
+			//Parse Material Index
+			const rapidjson::Value& materialIdxValue = objectValueArray[obj].FindMember("material_index")->value;
+			assert(!materialIdxValue.IsNull() && materialIdxValue.IsObject());
+			auto matIdx = materialIdxValue.GetInt();
+
 			//Set Mesh Values
-			Mesh mesh;
+			Mesh mesh(matIdx);
 			
 			for(int i = 0; i < indices.Size(); i += 3)
 			{
@@ -101,7 +112,9 @@ namespace Caustic
 			m_Objects.push_back(mesh);
 		}
 
-		//Parse Light values
+		//--------------------------------------------------------------------//
+		//----------------------------PARSE LIGHTS----------------------------//
+		//--------------------------------------------------------------------//
 		const rapidjson::Value& lightsValue = doc.FindMember("lights")->value;
 		assert(!lightsValue.IsNull() && lightsValue.IsArray());
 		auto lightsValueArray = lightsValue.GetArray();
@@ -118,6 +131,34 @@ namespace Caustic
 
 			Light currentLight(intensityValue.GetInt(), LoadVector(posValue.GetArray()));
 			m_Lights.push_back(currentLight);
+		}
+
+		//--------------------------------------------------------------------//
+		//--------------------------PARSE MATERIALS---------------------------//
+		//--------------------------------------------------------------------//
+		const rapidjson::Value& materialsValue = doc.FindMember("materials")->value;
+		assert(!materialsValue.IsNull() && materialsValue.IsArray());
+		auto materialsValueArray = materialsValue.GetArray();
+
+		for (int material = 0; material < materialsValueArray.Size(); material++)
+		{
+			//Parse Type value
+			const rapidjson::Value& typeValue = materialsValue.FindMember("type")->value;
+			assert(!typeValue.IsNull() && typeValue.IsObject());
+			std::string type = typeValue.GetString();
+
+			//Parse Albedo
+			const rapidjson::Value& albedoValue = materialsValue.FindMember("albedo")->value;
+			assert(!albedoValue.IsNull() && albedoValue.IsArray());
+			glm::vec3 albedo = LoadVector(albedoValue.GetArray());
+
+			//Parse SmoothShading
+			const rapidjson::Value& shadingValue = materialsValue.FindMember("smooth_shading")->value;
+			assert(!shadingValue.IsNull() && shadingValue.IsBool());
+			bool smoothShading = shadingValue.GetBool();
+
+			Material mat(type, albedo, smoothShading);
+			m_Materials.push_back(mat);
 		}
 	}
 
