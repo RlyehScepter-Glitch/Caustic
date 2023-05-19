@@ -1,5 +1,4 @@
 #include "Triangle.h"
-#include "Ray.h"
 
 #include <glm/glm.hpp>
 #include <limits>
