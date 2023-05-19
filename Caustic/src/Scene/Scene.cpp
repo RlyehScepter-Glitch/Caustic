@@ -100,6 +100,25 @@ namespace Caustic
 			//Push Mesh into the Scene
 			m_Objects.push_back(mesh);
 		}
+
+		//Parse Light values
+		const rapidjson::Value& lightsValue = doc.FindMember("lights")->value;
+		assert(!lightsValue.IsNull() && lightsValue.IsArray());
+		auto lightsValueArray = lightsValue.GetArray();
+
+		for (int light = 0; light < lightsValueArray.Size(); light++)
+		{
+			//Parse Intensity value
+			const rapidjson::Value& intensityValue = lightsValueArray[light].FindMember("intensity")->value;
+			assert(!intensityValue.IsNull() && intensityValue.IsInt());
+
+			//Parse Position value
+			const rapidjson::Value& posValue = lightsValueArray[light].FindMember("position")->value;
+			assert(!posValue.IsNull() && posValue.IsArray());
+
+			Light currentLight(intensityValue.GetInt(), LoadVector(posValue.GetArray()));
+			m_Lights.push_back(currentLight);
+		}
 	}
 
 	rapidjson::Document GetJsonDocument(const std::string& sceneFileName)
