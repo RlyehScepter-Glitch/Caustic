@@ -88,6 +88,7 @@
   <ItemGroup>
     <ClCompile Include="src\Scene\Camera.cpp" />
     <ClCompile Include="src\Scene\Light.cpp" />
+    <ClCompile Include="src\Scene\Material.cpp" />
     <ClCompile Include="src\Scene\Mesh.cpp" />
     <ClCompile Include="src\Core\Ray.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
@@ -98,6 +99,7 @@
   <ItemGroup>
     <ClInclude Include="src\Scene\Camera.h" />
     <ClInclude Include="src\Scene\Light.h" />
+    <ClInclude Include="src\Scene\Material.h" />
     <ClInclude Include="src\Scene\Mesh.h" />
     <ClInclude Include="src\Core\Ray.h" />
     <ClInclude Include="src\Scene\Scene.h" />
