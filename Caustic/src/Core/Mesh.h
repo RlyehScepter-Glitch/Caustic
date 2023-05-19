@@ -14,6 +14,7 @@ namespace Caustic
         Mesh() = default;
 
         bool Intersect(const Ray& ray, float nearClip, float &tNear, uint32_t& triIndex, glm::vec2& uv) const;
+        bool ShadowIntersect(const Ray& ray) const;
 
         const std::vector<Triangle>& GetTriangles() const { return m_Triangles; }
 

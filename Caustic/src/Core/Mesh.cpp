@@ -14,7 +14,7 @@ namespace Caustic
             float u;
             float v;
 
-            if (m_Triangles[i].Intersect(ray, t, u, v) && t <= tNear)
+            if (m_Triangles[i].Intersect(ray, t, u, v) && t <= tNear && t > 0)
             {
                 tNear = t;
                 triIndex = i;
@@ -27,6 +27,27 @@ namespace Caustic
 
         return intersected;
 	}
+
+    bool Mesh::ShadowIntersect(const Ray& ray) const
+    {
+        bool intersected = false;
+
+        for (size_t i = 0; i < m_Triangles.size(); i++)
+        {
+            //t, u and v set inside Triangle Intersect function
+            float t;
+            float u;
+            float v;
+
+            if (m_Triangles[i].ShadowIntersect(ray, t, u, v))
+            {
+                intersected = true;
+            }
+
+        }
+
+        return intersected;
+    }
 
 	void Mesh::PushTriangle(const Triangle& triangle)
 	{
