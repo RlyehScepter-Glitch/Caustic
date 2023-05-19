@@ -12,6 +12,7 @@ namespace Caustic
     public:
         // Constructors
         Mesh() = default;
+        Mesh(uint32_t materialIdx);
 
         bool Intersect(const Ray& ray, float nearClip, float &tNear, uint32_t& triIndex, glm::vec2& uv) const;
         bool ShadowIntersect(const Ray& ray) const;
@@ -20,6 +21,7 @@ namespace Caustic
 
         void PushTriangle(const Triangle& triangle);
     private:
+        uint32_t m_MaterialIdx = 0;
         std::vector<Triangle> m_Triangles;
     };
 }

@@ -2,6 +2,11 @@
 
 namespace Caustic
 {
+    Mesh::Mesh(uint32_t materialIdx)
+        :m_MaterialIdx(materialIdx)
+    {
+    }
+
     //Takes in a Ray, Camera nearclip(nearClip), Nearest distance(tNear), Triangle index(triIndex), Barycentric coordinates of the intersection point(uv)
 	bool Mesh::Intersect(const Ray& ray, float nearClip, float& tNear, uint32_t& triIndex, glm::vec2& uv) const
 	{
