@@ -12,10 +12,12 @@ namespace Caustic
 {
 	void Renderer::GenerateImage(const Scene& scene)
 	{
+		// Scene Settings
 		Caustic::Settings sceneSettings = scene.GetSettings();
 		uint32_t sceneWidth = sceneSettings.GetWidth();
 		uint32_t sceneHeight = sceneSettings.GetHeight();
-		float aspectRatio = (float)sceneWidth / (float)sceneHeight;
+		float aspectRatio = sceneSettings.GetAspectRatio();
+		glm::mat3 viewMatrix = (glm::mat3)scene.GetCamera().GetViewMatrix();
 		glm::vec3 background = scene.GetSettings().GetBackgroundColor();
 		float bgR = background.r;
 		float bgG = background.g;
@@ -35,29 +37,8 @@ namespace Caustic
 		{
 			for (uint32_t x = 0; x < sceneWidth; x++)
 			{
-				//-----Ray Generation----//
-				float tempX = x;
-				float tempY = y;
+				Ray R = Renderer::GenerateRay(x, y, scene);
 
-				//Find center based on raster coordinates
-				tempX += 0.5f;
-				tempY += 0.5f;
-
-				//Convert raster coordinates to NDC space [0.0, 1.0]
-				tempX /= sceneWidth;
-				tempY /= sceneHeight;
-
-				//Convert NDC coordinates to Screen space [-1.0, 1.0]
-				tempX = (2.0f * tempX) - 1.0f;
-				tempY = 1.0f - (2.0f * tempY);
-
-				//Aspect ratio
-				tempX *= aspectRatio;
-
-				glm::vec3 rayDir(tempX, tempY, -1);
-				rayDir = (glm::mat3)scene.GetCamera().GetViewMatrix() * glm::normalize(rayDir);
-
-				Caustic::Ray R(scene.GetCamera().GetPosition(), rayDir);
 				float t = 0.0f;
 
 				float tNear = FLT_MAX;
@@ -136,5 +117,34 @@ namespace Caustic
 
 		// Close Filestream
 		ppmFileStream.close();
+	}
+	
+	Ray Renderer::GenerateRay(const uint32_t& x, const uint32_t& y, const Scene& scene)
+	{
+		//-----Ray Generation----//
+		float tempX = x;
+		float tempY = y;
+
+		//Find center based on raster coordinates
+		tempX += 0.5f;
+		tempY += 0.5f;
+
+		//Convert raster coordinates to NDC space [0.0, 1.0]
+		tempX /= scene.GetSettings().GetWidth();
+		tempY /= scene.GetSettings().GetHeight();
+
+		//Convert NDC coordinates to Screen space [-1.0, 1.0]
+		tempX = (2.0f * tempX) - 1.0f;
+		tempY = 1.0f - (2.0f * tempY);
+
+		//Aspect ratio
+		tempX *= scene.GetSettings().GetAspectRatio();
+
+		glm::vec3 rayDir(tempX, tempY, -1);
+		rayDir = (glm::mat3)scene.GetCamera().GetViewMatrix() * glm::normalize(rayDir);
+
+		Caustic::Ray ray(scene.GetCamera().GetPosition(), rayDir);
+
+		return ray;
 	}
 }

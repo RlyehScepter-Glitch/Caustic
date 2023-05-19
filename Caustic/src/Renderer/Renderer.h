@@ -9,6 +9,7 @@ namespace Caustic
 	{
 	public:
 		static void GenerateImage(const Scene& scene);
+		static Ray GenerateRay(const uint32_t& x, const uint32_t& y, const Scene& scene);
 	};
 
 }
