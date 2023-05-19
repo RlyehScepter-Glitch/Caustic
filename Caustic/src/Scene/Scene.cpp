@@ -64,101 +64,107 @@ namespace Caustic
 		//----------------------------PARSE MESHES----------------------------//
 		//--------------------------------------------------------------------//
 		const rapidjson::Value& objectsValue = doc.FindMember("objects")->value;
-		assert(!objectsValue.IsNull() && objectsValue.IsArray());
-		auto objectValueArray = objectsValue.GetArray();
-		
-		for (size_t obj = 0; obj < objectValueArray.Size(); obj++)
+		if (!objectsValue.IsNull() && objectsValue.IsArray())
 		{
-			//Parse Vertices
-			const rapidjson::Value& verticesValue = objectValueArray[obj].FindMember("vertices")->value;
-			assert(!verticesValue.IsNull() && verticesValue.IsArray());
-			auto vertexValuesArray = verticesValue.GetArray();
-			
-			std::vector<glm::vec3> vertices;
-			for (size_t i = 0; i < vertexValuesArray.Size(); i += 3)
+			auto objectValueArray = objectsValue.GetArray();
+
+			for (size_t obj = 0; obj < objectValueArray.Size(); obj++)
 			{
-				glm::vec3 vertex(vertexValuesArray[i].GetFloat(), vertexValuesArray[i + 1].GetFloat(), vertexValuesArray[i + 2].GetFloat());
-				vertices.push_back(vertex);
+				//Parse Vertices
+				const rapidjson::Value& verticesValue = objectValueArray[obj].FindMember("vertices")->value;
+				assert(!verticesValue.IsNull() && verticesValue.IsArray());
+				auto vertexValuesArray = verticesValue.GetArray();
+
+				std::vector<glm::vec3> vertices;
+				for (size_t i = 0; i < vertexValuesArray.Size(); i += 3)
+				{
+					glm::vec3 vertex(vertexValuesArray[i].GetFloat(), vertexValuesArray[i + 1].GetFloat(), vertexValuesArray[i + 2].GetFloat());
+					vertices.push_back(vertex);
+				}
+
+				//Parse Triangle Indices
+				const rapidjson::Value& indicesValue = objectValueArray[obj].FindMember("triangles")->value;
+				assert(!indicesValue.IsNull() && indicesValue.IsArray());
+				auto indices = indicesValue.GetArray();
+
+				//Parse Material Index
+				const rapidjson::Value& materialIdxValue = objectValueArray[obj].FindMember("material_index")->value;
+				assert(!materialIdxValue.IsNull() && materialIdxValue.IsInt());
+				auto matIdx = materialIdxValue.GetInt();
+
+				//Set Mesh Values
+				Mesh mesh(matIdx);
+
+				for (int i = 0; i < indices.Size(); i += 3)
+				{
+					//VI - Vertex Index
+					int VI1 = indices[i].GetInt();
+					int VI2 = indices[i + 1].GetInt();
+					int VI3 = indices[i + 2].GetInt();
+
+					//Create Triangle
+					Triangle triangle(vertices[VI1], vertices[VI2], vertices[VI3]);
+
+					//Push Triangle to the Mesh
+					mesh.PushTriangle(triangle);
+				}
+
+				//Push Mesh into the Scene
+				m_Objects.push_back(mesh);
 			}
-
-			//Parse Triangle Indices
-			const rapidjson::Value& indicesValue = objectValueArray[obj].FindMember("triangles")->value;
-			assert(!indicesValue.IsNull() && indicesValue.IsArray());
-			auto indices = indicesValue.GetArray();
-
-			//Parse Material Index
-			const rapidjson::Value& materialIdxValue = objectValueArray[obj].FindMember("material_index")->value;
-			assert(!materialIdxValue.IsNull() && materialIdxValue.IsObject());
-			auto matIdx = materialIdxValue.GetInt();
-
-			//Set Mesh Values
-			Mesh mesh(matIdx);
-			
-			for(int i = 0; i < indices.Size(); i += 3)
-			{
-				//VI - Vertex Index
-				int VI1 = indices[i].GetInt();
-				int VI2 = indices[i+1].GetInt();
-				int VI3 = indices[i+2].GetInt();
-
-				//Create Triangle
-				Triangle triangle(vertices[VI1], vertices[VI2], vertices[VI3]);
-				
-				//Push Triangle to the Mesh
-				mesh.PushTriangle(triangle);
-			}
-
-			//Push Mesh into the Scene
-			m_Objects.push_back(mesh);
 		}
 
 		//--------------------------------------------------------------------//
 		//----------------------------PARSE LIGHTS----------------------------//
 		//--------------------------------------------------------------------//
 		const rapidjson::Value& lightsValue = doc.FindMember("lights")->value;
-		assert(!lightsValue.IsNull() && lightsValue.IsArray());
-		auto lightsValueArray = lightsValue.GetArray();
-
-		for (int light = 0; light < lightsValueArray.Size(); light++)
+		if (!lightsValue.IsNull() && lightsValue.IsArray())
 		{
-			//Parse Intensity value
-			const rapidjson::Value& intensityValue = lightsValueArray[light].FindMember("intensity")->value;
-			assert(!intensityValue.IsNull() && intensityValue.IsInt());
+			auto lightsValueArray = lightsValue.GetArray();
 
-			//Parse Position value
-			const rapidjson::Value& posValue = lightsValueArray[light].FindMember("position")->value;
-			assert(!posValue.IsNull() && posValue.IsArray());
+			for (int light = 0; light < lightsValueArray.Size(); light++)
+			{
+				//Parse Intensity value
+				const rapidjson::Value& intensityValue = lightsValueArray[light].FindMember("intensity")->value;
+				assert(!intensityValue.IsNull() && intensityValue.IsInt());
 
-			Light currentLight(intensityValue.GetInt(), LoadVector(posValue.GetArray()));
-			m_Lights.push_back(currentLight);
+				//Parse Position value
+				const rapidjson::Value& posValue = lightsValueArray[light].FindMember("position")->value;
+				assert(!posValue.IsNull() && posValue.IsArray());
+
+				Light currentLight(intensityValue.GetInt(), LoadVector(posValue.GetArray()));
+				m_Lights.push_back(currentLight);
+			}
 		}
 
 		//--------------------------------------------------------------------//
 		//--------------------------PARSE MATERIALS---------------------------//
 		//--------------------------------------------------------------------//
 		const rapidjson::Value& materialsValue = doc.FindMember("materials")->value;
-		assert(!materialsValue.IsNull() && materialsValue.IsArray());
-		auto materialsValueArray = materialsValue.GetArray();
-
-		for (int material = 0; material < materialsValueArray.Size(); material++)
+		if (!materialsValue.IsNull() && materialsValue.IsArray())
 		{
-			//Parse Type value
-			const rapidjson::Value& typeValue = materialsValue.FindMember("type")->value;
-			assert(!typeValue.IsNull() && typeValue.IsObject());
-			std::string type = typeValue.GetString();
+			auto materialsValueArray = materialsValue.GetArray();
 
-			//Parse Albedo
-			const rapidjson::Value& albedoValue = materialsValue.FindMember("albedo")->value;
-			assert(!albedoValue.IsNull() && albedoValue.IsArray());
-			glm::vec3 albedo = LoadVector(albedoValue.GetArray());
+			for (int material = 0; material < materialsValueArray.Size(); material++)
+			{
+				//Parse Type value
+				const rapidjson::Value& typeValue = materialsValue.FindMember("type")->value;
+				assert(!typeValue.IsNull() && typeValue.IsString());
+				std::string type = typeValue.GetString();
 
-			//Parse SmoothShading
-			const rapidjson::Value& shadingValue = materialsValue.FindMember("smooth_shading")->value;
-			assert(!shadingValue.IsNull() && shadingValue.IsBool());
-			bool smoothShading = shadingValue.GetBool();
+				//Parse Albedo
+				const rapidjson::Value& albedoValue = materialsValue.FindMember("albedo")->value;
+				assert(!albedoValue.IsNull() && albedoValue.IsArray());
+				glm::vec3 albedo = LoadVector(albedoValue.GetArray());
 
-			Material mat(type, albedo, smoothShading);
-			m_Materials.push_back(mat);
+				//Parse SmoothShading
+				const rapidjson::Value& shadingValue = materialsValue.FindMember("smooth_shading")->value;
+				assert(!shadingValue.IsNull() && shadingValue.IsBool());
+				bool smoothShading = shadingValue.GetBool();
+
+				Material mat(type, albedo, smoothShading);
+				m_Materials.push_back(mat);
+			}
 		}
 	}
 
