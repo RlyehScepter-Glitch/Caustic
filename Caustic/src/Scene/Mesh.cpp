@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "Core/Ray.h"
 
 namespace Caustic
 {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Core/Camera.h"
-#include "Core/Mesh.h"
-#include "Core/Light.h"
+#include "Camera.h"
+#include "Mesh.h"
+#include "Light.h"
 #include "Settings.h"
 
 #include <vector>
