@@ -10,7 +10,7 @@ static const float shadowBias = 0.001f;
 
 namespace Caustic
 {
-	void Renderer::GenerateImage(const Scene& scene)
+	void Renderer::GenerateImage(const Scene& scene, const std::string& fileName)
 	{
 		// Scene Settings
 		Caustic::Settings sceneSettings = scene.GetSettings();
@@ -24,7 +24,8 @@ namespace Caustic
 		float bgB = background.b;
 
 		// Open Filestream
-		std::ofstream ppmFileStream("HomeworkDragon.ppm", std::ios::out | std::ios::binary);
+
+		std::ofstream ppmFileStream(fileName, std::ios::out | std::ios::binary);
 		ppmFileStream << "P3\n";
 		ppmFileStream << sceneWidth << " " << sceneHeight << "\n";
 		ppmFileStream << maxColorComponent << "\n";
@@ -37,10 +38,10 @@ namespace Caustic
 		{
 			for (uint32_t x = 0; x < sceneWidth; x++)
 			{
+				// Ray Generation
 				Ray R = Renderer::GenerateRay(x, y, scene);
 
 				float t = 0.0f;
-
 				float tNear = FLT_MAX;
 				uint32_t triangleIndex;
 				glm::vec2 uv(0, 0);
@@ -57,41 +58,48 @@ namespace Caustic
 						glm::vec3 hitPoint = R.GetOrigin() + R.GetDirection() * tNear;
 
 						glm::vec3 finalColor(0.0f, 0.0f, 0.0f);
+						glm::vec3 triangleColor(uv.x, uv.y, 1 - uv.x - uv.y);
 
-						// Check every light
-						for (const Caustic::Light& light : scene.GetLights())
+						// Check if Scene containse lights
+						if (scene.GetLights().size() == 0)
 						{
-							glm::vec3 lightDir = light.GetPosition() - hitPoint;
-							float sphereRad = glm::length(lightDir);
-							lightDir = glm::normalize(lightDir);
-							float cosLaw = glm::max(0.0f, glm::dot(lightDir, triangle.GetNormal()));
-							float sphereArea = 4.0f * glm::pi<float>() * sphereRad * sphereRad;
-
-							float lightIntensity = light.GetIntensity();
-							glm::vec3 triangleColor = triangle.GetColor();
-
-							Caustic::Ray shadowRay(hitPoint + triangle.GetNormal() * shadowBias, lightDir);
-
-							glm::vec3 lightContribution(0.0f);
-
-							bool shadowRayIntersect = false;
-
-							// Check if Shadow ray intersects anything
-							for (const Caustic::Mesh& meshAgain : scene.GetObjects())
+							finalColor = triangleColor;
+						}
+						else
+						{
+							for (const Caustic::Light& light : scene.GetLights())
 							{
-								if (meshAgain.ShadowIntersect(shadowRay))
+								glm::vec3 lightDir = light.GetPosition() - hitPoint;
+								float sphereRad = glm::length(lightDir);
+								lightDir = glm::normalize(lightDir);
+								float cosLaw = glm::max(0.0f, glm::dot(lightDir, triangle.GetNormal()));
+								float sphereArea = 4.0f * glm::pi<float>() * sphereRad * sphereRad;
+
+								float lightIntensity = light.GetIntensity();
+
+								Caustic::Ray shadowRay(hitPoint + triangle.GetNormal() * shadowBias, lightDir);
+
+								glm::vec3 lightContribution(0.0f);
+
+								bool shadowRayIntersect = false;
+
+								// Check if Shadow ray intersects anything
+								for (const Caustic::Mesh& meshAgain : scene.GetObjects())
 								{
-									shadowRayIntersect = true;
-									break;
+									if (meshAgain.ShadowIntersect(shadowRay))
+									{
+										shadowRayIntersect = true;
+										break;
+									}
 								}
-							}
 
-							if (shadowRayIntersect == false)
-							{
-								lightContribution = lightIntensity / sphereArea * triangleColor * cosLaw;
-							}
+								if (shadowRayIntersect == false)
+								{
+									lightContribution = lightIntensity / sphereArea * triangleColor * cosLaw;
+								}
 
-							finalColor += lightContribution;
+								finalColor += lightContribution;
+							}						
 						}
 
 						backgroundColor = finalColor;
