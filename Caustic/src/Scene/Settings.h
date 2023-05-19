@@ -17,6 +17,7 @@ namespace Caustic
 		const glm::vec3& GetBackgroundColor() const { return m_BackgroundColor; }
 		const uint32_t& GetWidth() const { return m_Width; }
 		const uint32_t& GetHeight() const  { return m_Height; }
+		const float& GetAspectRatio() const  { return m_AspectRatio; }
 
 		//Setters
 		void SetBackgroundColor(const glm::vec3& bgColor);
@@ -26,5 +27,6 @@ namespace Caustic
 	private:
 		glm::vec3 m_BackgroundColor = { 0.0f, 0.0f, 0.0f };
 		uint32_t m_Width = 1920, m_Height = 1080;
+		float m_AspectRatio = 16 / 9;
 	};
 }
