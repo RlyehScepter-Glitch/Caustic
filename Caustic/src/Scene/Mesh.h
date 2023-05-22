@@ -17,6 +17,7 @@ namespace Caustic
         bool Intersect(const Ray& ray, float nearClip, float &tNear, uint32_t& triIndex, glm::vec2& uv) const;
         bool ShadowIntersect(const Ray& ray) const;
 
+        const uint32_t GetMaterialIdx() const { return m_MaterialIdx; }
         const std::vector<Triangle>& GetTriangles() const { return m_Triangles; }
 
         void PushTriangle(const Triangle& triangle);
