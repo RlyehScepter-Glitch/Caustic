@@ -7,28 +7,13 @@ namespace Caustic
 		return m_Origin + m_Direction * distance;
 	}
 	
-	glm::vec3 Ray::GetOrigin() const
+	void Ray::SetOrigin(const glm::vec3& origin)
 	{
-		return m_Origin;
+		m_Origin = origin;
 	}
-	
-	glm::vec3 Ray::GetDirection() const
+
+	void Ray::SetDirection(const glm::vec3& direction)
 	{
-		return m_Direction;
-	}
-	
-	float Ray::GetTMin() const
-	{
-		return m_TMin;
-	}
-	
-	float Ray::GetTMax() const
-	{
-		return m_TMax;
-	}
-	
-	int Ray::GetDepth() const
-	{
-		return m_Depth;
+		m_Direction = direction;
 	}
 }
