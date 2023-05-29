@@ -16,6 +16,72 @@ namespace Caustic
 		ParseSceneFile(sceneFileName);
 	}
 
+	IntersectionData Scene::TraceRay(const Ray& ray) const
+	{
+		IntersectionData data;
+
+		bool intersected = false;
+		uint32_t meshIndex = 0;
+		uint32_t triIndex = 0;
+		float tNear = FLT_MAX;
+		float uNear = FLT_MAX;
+		float vNear = FLT_MAX;
+		float t = 0.0f;
+		float u = 0.0f;
+		float v = 0.0f;
+
+
+		for(uint32_t m = 0; m < m_Objects.size(); m++)
+		{
+			const Mesh& mesh = m_Objects[m];
+			
+			for(uint32_t i = 0; i < mesh.GetTriangles().size(); i++)
+			{
+				const Triangle& triangle = mesh.GetTriangles()[i];
+
+				if ((ray.GetType() == RayType::camera || ray.GetType() == RayType::reflection) && triangle.Intersect(ray, t, u, v, mesh.GetVertices()) && t <= tNear && t > 0)
+				{
+					tNear = t;
+					uNear = u;
+					vNear = v;
+					meshIndex = m;
+					triIndex = i;
+					intersected = true;
+				}
+				else if (ray.GetType() == RayType::shadow && triangle.Intersect(ray, t, u, v, mesh.GetVertices()))
+				{
+					tNear = t;
+					meshIndex = m;
+					triIndex = i;
+					intersected = true;
+					break;
+				}
+			}
+		}
+
+		if(intersected && (ray.GetType() == RayType::camera || ray.GetType() == RayType::reflection))
+		{
+			const Triangle& triangle = m_Objects[meshIndex].GetTriangles()[triIndex];
+			data.hitPoint = ray.GetOrigin() + ray.GetDirection() * tNear;
+			data.hitPointNormal = triangle.GetTriangleNormal();
+
+			//WRONG?
+			data.interpolatedVertexNormal = glm::normalize(m_Objects[meshIndex].GetVertices()[triangle.GetVertex0()].GetVertexNormal() * (1 - uNear - vNear) +
+											m_Objects[meshIndex].GetVertices()[triangle.GetVertex1()].GetVertexNormal() * uNear +
+											m_Objects[meshIndex].GetVertices()[triangle.GetVertex2()].GetVertexNormal() * vNear);
+			data.UV = { uNear, vNear };
+			data.objectIdx = meshIndex;
+			data.materialIdx = m_Objects[meshIndex].GetMaterialIdx();
+			data.triangleIdx = triIndex;
+		}
+		else if (intersected && ray.GetType() == RayType::shadow)
+		{
+			data.triangleIdx = triIndex;
+		}
+
+		return data;
+	}
+
 	void Scene::ParseSceneFile(const std::string& sceneFileName)
 	{
 		const rapidjson::Document& doc = GetJsonDocument(sceneFileName);
@@ -69,50 +135,66 @@ namespace Caustic
 		{
 			auto objectValueArray = objectsValue.GetArray();
 
-			for (size_t obj = 0; obj < objectValueArray.Size(); obj++)
+			//uint32_t sceneVertexIndex = 0;
+			//uint32_t SVIOffset = 0;
+			uint32_t sceneMeshIndex = 0;
+
+
+			for (uint32_t obj = 0; obj < objectValueArray.Size(); obj++)
 			{
-				//Parse Vertices
-				const rapidjson::Value& verticesValue = objectValueArray[obj].FindMember("vertices")->value;
-				assert(!verticesValue.IsNull() && verticesValue.IsArray());
-				auto vertexValuesArray = verticesValue.GetArray();
-
-				std::vector<glm::vec3> vertices;
-				for (size_t i = 0; i < vertexValuesArray.Size(); i += 3)
-				{
-					glm::vec3 vertex(vertexValuesArray[i].GetFloat(), vertexValuesArray[i + 1].GetFloat(), vertexValuesArray[i + 2].GetFloat());
-					vertices.push_back(vertex);
-				}
-
-				//Parse Triangle Indices
-				const rapidjson::Value& indicesValue = objectValueArray[obj].FindMember("triangles")->value;
-				assert(!indicesValue.IsNull() && indicesValue.IsArray());
-				auto indices = indicesValue.GetArray();
-
 				//Parse Material Index
 				const rapidjson::Value& materialIdxValue = objectValueArray[obj].FindMember("material_index")->value;
 				assert(!materialIdxValue.IsNull() && materialIdxValue.IsInt());
 				auto matIdx = materialIdxValue.GetInt();
 
-				//Set Mesh Values
-				Mesh mesh(matIdx);
+				Mesh mesh = Mesh(matIdx, sceneMeshIndex);
 
-				for (int i = 0; i < indices.Size(); i += 3)
+				//Parse Vertices
+				const rapidjson::Value& verticesValue = objectValueArray[obj].FindMember("vertices")->value;
+				assert(!verticesValue.IsNull() && verticesValue.IsArray());
+				auto vertexValuesArray = verticesValue.GetArray();
+
+				for (uint32_t i = 0; i < vertexValuesArray.Size(); i += 3)
 				{
-					//VI - Vertex Index
-					int VI1 = indices[i].GetInt();
-					int VI2 = indices[i + 1].GetInt();
-					int VI3 = indices[i + 2].GetInt();
+					Vertex vertex(vertexValuesArray[i].GetFloat(), vertexValuesArray[i + 1].GetFloat(), vertexValuesArray[i + 2].GetFloat());
+					mesh.PushVertex(vertex);
+				}
 
-					//Create Triangle
-					Triangle triangle(vertices[VI1], vertices[VI2], vertices[VI3]);
+				//Parse Triangle
+				const rapidjson::Value& indicesValue = objectValueArray[obj].FindMember("triangles")->value;
+				assert(!indicesValue.IsNull() && indicesValue.IsArray());
+				auto indices = indicesValue.GetArray();
 
-					//Push Triangle to the Mesh
+				uint32_t meshTriangleIndex = 0;
+
+				for (uint32_t i = 0; i < indices.Size(); i += 3)
+				{
+					//VI - Vertex Index in Mesh
+					uint32_t VI0 = indices[i].GetInt();
+					uint32_t VI1 = indices[i + 1].GetInt();
+					uint32_t VI2 = indices[i + 2].GetInt();
+					
+					//Push triangle the Mesh
+					Triangle triangle(VI0, VI1, VI2, mesh.GetVertices(), sceneMeshIndex);
 					mesh.PushTriangle(triangle);
+
+					mesh.PushTriangleIndexToVertex(VI0, meshTriangleIndex);
+					mesh.PushTriangleIndexToVertex(VI1, meshTriangleIndex);
+					mesh.PushTriangleIndexToVertex(VI2, meshTriangleIndex);
+
+					meshTriangleIndex++;
 				}
 
 				//Push Mesh into the Scene
 				m_Objects.push_back(mesh);
+				sceneMeshIndex++;
 			}
+
+			for (Mesh& mesh : m_Objects)
+			{
+				mesh.UpdateVertexNormals();
+			}
+
 		}
 
 		//--------------------------------------------------------------------//

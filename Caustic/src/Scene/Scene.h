@@ -5,6 +5,8 @@
 #include "Light.h"
 #include "Settings.h"
 #include "Material.h"
+#include "Core/Vertex.h"
+#include "Core/Triangle.h"
 
 #include <vector>
 #include <glm/glm.hpp>
@@ -12,6 +14,17 @@
 
 namespace Caustic
 {
+	struct IntersectionData
+	{
+		glm::vec3 hitPoint;
+		glm::vec3 hitPointNormal;
+		glm::vec3 interpolatedVertexNormal;
+		glm::vec2 UV;
+		int materialIdx;
+		int objectIdx;
+		int triangleIdx = -1;
+	};
+
 	class Scene
 	{
 	public:
@@ -25,6 +38,7 @@ namespace Caustic
 		const std::vector<Light>& GetLights() const { return m_Lights; }
 		const std::vector<Material>& GetMaterials() const { return m_Materials; }
 
+		IntersectionData TraceRay(const Ray& ray) const;
 	private:
 		void ParseSceneFile(const std::string& sceneFileName);
 	private:
