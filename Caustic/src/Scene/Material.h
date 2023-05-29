@@ -6,7 +6,10 @@ namespace Caustic
 {
 	enum class MaterialType
 	{
-	diffuse
+	diffuse,
+	reflective,
+	refractive,
+	constant
 	};
 
 	class Material
@@ -31,6 +34,12 @@ namespace Caustic
 		{
 			if (type == "diffuse")
 				return MaterialType::diffuse;
+			if (type == "reflective")
+				return MaterialType::reflective;
+			if (type == "refractive")
+				return MaterialType::refractive;
+			if (type == "constant")
+				return MaterialType::constant;
 
 			//Returns Default type
 			return MaterialType::diffuse;
