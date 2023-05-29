@@ -4,10 +4,10 @@
 int main() 
 {
 	// Create Scene
-	Caustic::Scene scene("resources/scene0.crtscene");
+	Caustic::Scene scene("resources/scene5.crtscene");
 
 	// Render Image
-	Caustic::Renderer::GenerateImage(scene, "Homework.ppm");
+	Caustic::Renderer::GenerateImage(scene, "HomeworkDragon.ppm");
 
 	// End program
 	return 0;
