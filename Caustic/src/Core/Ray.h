@@ -6,17 +6,22 @@
 
 namespace Caustic
 {
+	enum class RayType
+	{
+		invalid,
+		camera,
+		shadow,
+		reflection,
+		refractive
+	};
 
 	class Ray
 	{
 	public:
 		//Constructors
 		Ray() = default;
-		Ray(const glm::vec3& origin, const glm::vec3& direction, float tMin = 0.0f, float tMax = INFINITY, int depth = 0)
-		: m_Origin(origin), m_Direction(direction), m_TMin(tMin), m_TMax(tMax), m_Depth(depth)
-		{
-			
-		};
+		Ray(const glm::vec3& origin, const glm::vec3& direction, RayType type, int depth = 0, float tMin = 0.0f, float tMax = INFINITY)
+			: m_Origin(origin), m_Direction(direction), m_RayType(type), m_Depth(depth), m_TMin(tMin), m_TMax(tMax) {}
 
 		glm::vec3 PointAt(float distance) const;
 
@@ -26,6 +31,7 @@ namespace Caustic
 		const float GetTMin() const { return m_TMin; }
 		const float GetTMax() const { return m_TMax; }
 		const int GetDepth() const { return m_Depth; }
+		const RayType GetType() const { return m_RayType; }
 		
 		//Setters
 		void SetOrigin(const glm::vec3& origin);
@@ -37,6 +43,7 @@ namespace Caustic
 		float m_TMin;
 		float m_TMax;
 		int m_Depth;
+		RayType m_RayType;
 	};
 
 }
