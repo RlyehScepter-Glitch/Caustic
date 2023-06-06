@@ -245,7 +245,13 @@ namespace Caustic
 				assert(!shadingValue.IsNull() && shadingValue.IsBool());
 				bool smoothShading = shadingValue.GetBool();
 
-				Material mat(type, albedo, smoothShading);
+				//Parse IOR
+				float ior = 1.0f;
+				const rapidjson::Value& iorValue = materialsValueArray[material].FindMember("ior")->value;
+				if(!iorValue.IsNull() && iorValue.IsBool())
+					ior = iorValue.GetFloat();
+
+				Material mat(type, albedo, smoothShading, ior);
 				m_Materials.push_back(mat);
 			}
 		}

@@ -17,7 +17,7 @@ namespace Caustic
 	public:
 		//Constructors
 		Material() = default;
-		Material(const std::string& type, const glm::vec3& albedo, bool smoothShading);
+		Material(const std::string& type, const glm::vec3& albedo, bool smoothShading, float ior = 1.0f);
 
 		//Getters
 		const MaterialType& GetMaterialType() const { return m_MaterialType; }
@@ -26,6 +26,7 @@ namespace Caustic
 
 	private:
 		MaterialType m_MaterialType = MaterialType::diffuse;
+		float m_IOR;
 		glm::vec3 m_Albedo = { 1.0f, 1.0f, 1.0f };
 		bool m_SmoothShading = false;
 	
