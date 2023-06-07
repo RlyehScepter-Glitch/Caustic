@@ -23,6 +23,7 @@ namespace Caustic
 		bool intersected = false;
 		uint32_t meshIndex = 0;
 		uint32_t triIndex = 0;
+		float materialIOR = 1.0f;
 		float tNear = FLT_MAX;
 		float uNear = FLT_MAX;
 		float vNear = FLT_MAX;
@@ -39,7 +40,7 @@ namespace Caustic
 			{
 				const Triangle& triangle = mesh.GetTriangles()[i];
 
-				if ((ray.GetType() == RayType::camera || ray.GetType() == RayType::reflection) && triangle.Intersect(ray, t, u, v, mesh.GetVertices()) && t <= tNear && t > 0)
+				if ((ray.GetType() == RayType::camera || ray.GetType() == RayType::reflection || ray.GetType() == RayType::refractive) && triangle.Intersect(ray, t, u, v, mesh.GetVertices()) && t <= tNear && t > 0)
 				{
 					tNear = t;
 					uNear = u;
@@ -59,12 +60,11 @@ namespace Caustic
 			}
 		}
 
-		if(intersected && (ray.GetType() == RayType::camera || ray.GetType() == RayType::reflection))
+		if(intersected)
 		{
 			const Triangle& triangle = m_Objects[meshIndex].GetTriangles()[triIndex];
 			data.hitPoint = ray.GetOrigin() + ray.GetDirection() * tNear;
 			data.hitPointNormal = triangle.GetTriangleNormal();
-
 			//WRONG?
 			data.interpolatedVertexNormal = glm::normalize(m_Objects[meshIndex].GetVertices()[triangle.GetVertex0()].GetVertexNormal() * (1 - uNear - vNear) +
 											m_Objects[meshIndex].GetVertices()[triangle.GetVertex1()].GetVertexNormal() * uNear +
@@ -72,10 +72,7 @@ namespace Caustic
 			data.UV = { uNear, vNear };
 			data.objectIdx = meshIndex;
 			data.materialIdx = m_Objects[meshIndex].GetMaterialIdx();
-			data.triangleIdx = triIndex;
-		}
-		else if (intersected && ray.GetType() == RayType::shadow)
-		{
+			data.materialIOR = materialIOR;
 			data.triangleIdx = triIndex;
 		}
 
@@ -236,9 +233,12 @@ namespace Caustic
 				std::string type = typeValue.GetString();
 
 				//Parse Albedo
+				glm::vec3 albedo(1.0f);
 				const rapidjson::Value& albedoValue = materialsValueArray[material].FindMember("albedo")->value;
-				assert(!albedoValue.IsNull() && albedoValue.IsArray());
-				glm::vec3 albedo = LoadVector(albedoValue.GetArray());
+				if(!albedoValue.IsNull() && albedoValue.IsArray())
+				{
+					albedo = LoadVector(albedoValue.GetArray());
+				}
 
 				//Parse SmoothShading
 				const rapidjson::Value& shadingValue = materialsValueArray[material].FindMember("smooth_shading")->value;
@@ -252,6 +252,7 @@ namespace Caustic
 					ior = iorValue.GetFloat();
 
 				Material mat(type, albedo, smoothShading, ior);
+
 				m_Materials.push_back(mat);
 			}
 		}

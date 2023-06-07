@@ -22,6 +22,7 @@ namespace Caustic
 		glm::vec2 UV;
 		int materialIdx;
 		int objectIdx;
+		float materialIOR;
 		int triangleIdx = -1;
 	};
 
