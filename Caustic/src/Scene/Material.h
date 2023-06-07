@@ -22,12 +22,13 @@ namespace Caustic
 		//Getters
 		const MaterialType& GetMaterialType() const { return m_MaterialType; }
 		const glm::vec3& GetAlbedo() const { return m_Albedo; }
+		const float& GetIOR() const { return m_IOR; }
 		const bool SmoothShading() const { return m_SmoothShading; }
 
 	private:
 		MaterialType m_MaterialType = MaterialType::diffuse;
-		float m_IOR;
 		glm::vec3 m_Albedo = { 1.0f, 1.0f, 1.0f };
+		float m_IOR;
 		bool m_SmoothShading = false;
 	
 	private:
