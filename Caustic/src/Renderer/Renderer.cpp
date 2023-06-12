@@ -7,9 +7,9 @@
 #include <glm/gtc/constants.hpp>
 
 static const uint32_t maxColorComponent = 255;
-static const float shadowBias = 3.5f;
-static const float reflectionBias = 1.0f;
-static const float refractionBias = -1.0f;
+static const float shadowBias = 0.000001f;
+static const float reflectionBias = 0.000001f;
+static const float refractionBias = -0.0001f;
 static const uint32_t maxRayDepth = 5;
 
 namespace Caustic
@@ -177,7 +177,7 @@ namespace Caustic
 			glm::vec3 lightContribution(0.0f, 0.0f, 0.0f);
 
 			// Check if Shadow ray intersects anything
-			IntersectionData shadowData = scene.TraceRay(shadowRay);
+			IntersectionData shadowData = scene.TraceRay(shadowRay, sphereRad);
 			
 			if(shadowData.triangleIdx == -1)
 			{
@@ -194,13 +194,12 @@ namespace Caustic
 	{
 		bool smoothShading = scene.GetMaterials()[data.materialIdx].SmoothShading();
 
-		glm::vec3 originOffset = smoothShading ? data.interpolatedVertexNormal : data.hitPointNormal;
-		originOffset *= reflectionBias;
 		glm::vec3 N = smoothShading ? data.interpolatedVertexNormal : data.hitPointNormal;
-		glm::vec3 A = ray.GetDirection();
+		glm::vec3 I = ray.GetDirection();
+		glm::vec3 originOffset = N * reflectionBias;
 		
 		glm::vec3 reflOrigin = data.hitPoint + originOffset;
-		glm::vec3 reflDir = A - 2 * glm::dot(A, N) * N;
+		glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
 		
 		Ray reflRay(reflOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
 		IntersectionData reflData = scene.TraceRay(reflRay);
@@ -213,64 +212,51 @@ namespace Caustic
 	{
 		bool smoothShading = scene.GetMaterials()[data.materialIdx].SmoothShading();
 
-		glm::vec3 I = ray.GetDirection();
 		glm::vec3 N = smoothShading ? data.interpolatedVertexNormal : data.hitPointNormal;
+		glm::vec3 I = ray.GetDirection();
 
 		// Theta
-		float ƒÆ1 = glm::dot(I, N);
+		float NdotI = glm::clamp(glm::dot(I, N), -1.0f, 1.0f);
 		float IOR1 = 1.0f;
 		float IOR2 = data.materialIOR;
 
 		//Check if ray leaves object
-		if(ƒÆ1 > 0)
+		if (NdotI > 0)
 		{
 			N = -N;
 			std::swap(IOR1, IOR2);
 		}
-		float snellsLaw = IOR1 / IOR2;
-
-		//Calculate cos(I, N) = dot(I, N)
-		float cosa = -glm::dot(I, N);
-		float sina = glm::sqrt(1 - cosa * cosa);
-
-		// If angle(I, N) > critical angle - total internal reflection;
-		if(sina < snellsLaw)
-		{
-			// Find sin(R, -N)
-			float sinb = sina * snellsLaw;
-			float cosb = glm::sqrt(1 - sinb * sinb);
-			
-			glm::vec3 C = glm::normalize(I + cosa * N);
-			glm::vec3 B = C * sinb;
-			glm::vec3 A = cosb * -N;
-			glm::vec3 R = A + B;
-
-			glm::vec3 refractOrigin = data.hitPoint + (N * refractionBias);
-			Ray refractRay(refractOrigin, R, RayType::refractive, ray.GetDepth() + 1);
-			IntersectionData refractData = scene.TraceRay(refractRay);
-			glm::vec3 refractColor = Shade(refractRay, refractData, scene);
-
-			glm::vec3 reflectOrigin = data.hitPoint + (N * reflectionBias);
-			glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
-			Ray reflectRay(reflectOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
-			IntersectionData reflectData = scene.TraceRay(reflectRay);
-			glm::vec3 reflectColor = Shade(reflectRay, reflectData, scene);
-
-			float fresnel = 0.5f * (1.0f + glm::dot(I, N)) * (1.0f + glm::dot(I, N)) * (1.0f + glm::dot(I, N)) * (1.0f + glm::dot(I, N)) * (1.0f + glm::dot(I, N));
-
-			glm::vec3 finalColor = fresnel * reflectColor + (1 - fresnel) * refractColor;
-			return finalColor;
-		}
 		else
 		{
-			glm::vec3 reflectOrigin = data.hitPoint + (N * reflectionBias);
-			glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
-			Ray reflectRay(reflectOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
-			IntersectionData reflectData = scene.TraceRay(reflectRay);
-			glm::vec3 reflectColor = Shade(reflectRay, reflectData, scene);
-
-			return reflectColor;
+			NdotI = -NdotI;
 		}
+
+		float snellsLaw = IOR2 / IOR1;
+
+		float k = snellsLaw * glm::sqrt(glm::max(0.0f, 1 - NdotI * NdotI));
+
+		glm::vec3 refractColor(0.0f);
+
+		if(k < 1)
+		{
+			glm::vec3 refractOrigin = data.hitPoint + (N * refractionBias);
+			glm::vec3 refractDir = snellsLaw * I + (snellsLaw * NdotI - glm::sqrt(1.0f - k * k)) * N;
+			Ray refractRay(refractOrigin, refractDir, RayType::refractive, ray.GetDepth() + 1);
+			IntersectionData refractData = scene.TraceRay(refractRay);
+			refractColor = Shade(refractRay, refractData, scene);
+		}
+
+		glm::vec3 reflectOrigin = data.hitPoint + (N * reflectionBias);
+		glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
+		Ray reflectRay(reflectOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
+		IntersectionData reflectData = scene.TraceRay(reflectRay);
+		glm::vec3 reflectColor = Shade(reflectRay, reflectData, scene);
+
+		float fresnel = 0.5f * glm::pow(1.0f + glm::dot(I, N), 5.0f);
+		//float fresnel = 0.5f * (1.0f + glm::dot(I, N));
+
+		glm::vec3 finalColor = fresnel * reflectColor + (1 - fresnel) * refractColor;
+		return finalColor;
 
 	}
 	
