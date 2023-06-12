@@ -16,7 +16,7 @@ namespace Caustic
 		ParseSceneFile(sceneFileName);
 	}
 
-	IntersectionData Scene::TraceRay(const Ray& ray) const
+	IntersectionData Scene::TraceRay(const Ray& ray, float nearest) const
 	{
 		IntersectionData data;
 
@@ -24,7 +24,7 @@ namespace Caustic
 		uint32_t meshIndex = 0;
 		uint32_t triIndex = 0;
 		float materialIOR = 1.0f;
-		float tNear = FLT_MAX;
+		float tNear = nearest;
 		float uNear = FLT_MAX;
 		float vNear = FLT_MAX;
 		float t = 0.0f;
@@ -49,7 +49,7 @@ namespace Caustic
 					triIndex = i;
 					intersected = true;
 				}
-				else if (ray.GetType() == RayType::shadow && triangle.Intersect(ray, t, u, v, mesh.GetVertices()))
+				else if (ray.GetType() == RayType::shadow && m_Materials[mesh.GetMaterialIdx()].GetMaterialType() != MaterialType::refractive && triangle.Intersect(ray, t, u, v, mesh.GetVertices()) && t < tNear)
 				{
 					tNear = t;
 					meshIndex = m;

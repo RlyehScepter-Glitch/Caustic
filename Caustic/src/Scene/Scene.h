@@ -39,7 +39,7 @@ namespace Caustic
 		const std::vector<Light>& GetLights() const { return m_Lights; }
 		const std::vector<Material>& GetMaterials() const { return m_Materials; }
 
-		IntersectionData TraceRay(const Ray& ray) const;
+		IntersectionData TraceRay(const Ray& ray, float tNear = FLT_MAX) const;
 	private:
 		void ParseSceneFile(const std::string& sceneFileName);
 	private:
