@@ -2,15 +2,18 @@
 
 #include <fstream>
 #include <iostream>
+#include <thread>
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
 static const uint32_t maxColorComponent = 255;
-static const float shadowBias = 0.000001f;
-static const float reflectionBias = 0.000001f;
+static const float shadowBias = 0.00001f;
+static const float reflectionBias = 0.0001f;
 static const float refractionBias = -0.0001f;
-static const uint32_t maxRayDepth = 5;
+static const uint32_t maxRayDepth = 10;
+static const uint32_t regionWidth = 160;
+static const uint32_t regionHeight = 90;
 
 namespace Caustic
 {
@@ -31,20 +34,21 @@ namespace Caustic
 		// Create a two-dimensional array to represent the image
 		std::vector<std::vector<glm::vec3>> image(sceneHeight, std::vector<glm::vec3>(sceneWidth));
 
-		// Fill in image data
-		for (uint32_t y = 0; y < sceneHeight; y++)
+		// Create Thread Vector
+		std::vector<std::thread> threads;
+
+		// Generate Regions
+		for (uint32_t y = 0; y < sceneHeight; y += regionHeight)
 		{
-			for (uint32_t x = 0; x < sceneWidth; x++)
+			for (uint32_t x = 0; x < sceneWidth; x += regionWidth)
 			{
-				// Ray Generation
-				Ray R = Renderer::GenerateCameraRay(x, y, scene);
-
-				// Trace Ray
-				IntersectionData data = scene.TraceRay(R);
-
-				// Shade Pixel
-				image[y][x] = Renderer::Shade(R, data, scene);
+				threads.push_back(std::thread(GenerateRegion, std::ref(scene), std::ref(image), x, y));
 			}
+		}
+
+		for (uint32_t i = 0; i < threads.size(); i++)
+		{
+			threads[i].join();
 		}
 
 		// Write the image to file
@@ -60,6 +64,25 @@ namespace Caustic
 
 		// Close Filestream
 		ppmFileStream.close();
+	}
+
+	void Renderer::GenerateRegion(const Scene& scene, std::vector<std::vector<glm::vec3>>& image, uint32_t stX, uint32_t stY)
+	{
+		// Fill in image data
+		for (uint32_t y = stY; y < stY + regionHeight; y++)
+		{
+			for (uint32_t x = stX; x < stX + regionWidth; x++)
+			{
+				// Ray Generation
+				Ray R = Renderer::GenerateCameraRay(x, y, scene);
+
+				// Trace Ray
+				IntersectionData data = scene.TraceRay(R);
+
+				// Shade Pixel
+				image[y][x] = Renderer::Shade(R, data, scene);
+			}
+		}
 	}
 	
 	Ray Renderer::GenerateCameraRay(const uint32_t& x, const uint32_t& y, const Scene& scene)
