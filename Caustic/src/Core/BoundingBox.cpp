@@ -2,7 +2,7 @@
 
 namespace Caustic
 {
-	bool BoundingBox::IntersectsBox(const Ray& ray)
+	const bool BoundingBox::IntersectsBox(const Ray& ray) const
 	{
 		float tmin = (m_BoxMin.x - ray.GetOrigin().x) / ray.GetDirection().x;
 		float tmax = (m_BoxMax.x - ray.GetOrigin().x) / ray.GetDirection().x;

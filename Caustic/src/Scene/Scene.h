@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Light.h"
+#include "Core/BoundingBox.h"
 #include "Settings.h"
 #include "Material.h"
 #include "Core/Vertex.h"
@@ -48,5 +49,7 @@ namespace Caustic
 		std::vector<Mesh> m_Objects;
 		std::vector<Light> m_Lights;
 		std::vector<Material> m_Materials;
+	public:
+		BoundingBox m_BoundingBox;
 	};
 }

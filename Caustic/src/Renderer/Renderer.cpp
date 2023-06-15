@@ -45,8 +45,8 @@ namespace Caustic
 		uint32_t threadCount = std::thread::hardware_concurrency();
 		
 		// Creates bucket size based on the amount of threads available
-		const uint32_t bucketWidth = sceneWidth / 120;
-		const uint32_t bucketHeight = sceneHeight / 120;
+		const uint32_t bucketWidth = sceneWidth / 60;
+		const uint32_t bucketHeight = sceneHeight / 60;
 
 		// Generate Buckets
 		std::queue<glm::vec2> buckets;

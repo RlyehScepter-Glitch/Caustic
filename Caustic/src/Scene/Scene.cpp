@@ -31,6 +31,12 @@ namespace Caustic
 		float u = 0.0f;
 		float v = 0.0f;
 
+		bool intersectsBox = m_BoundingBox.IntersectsBox(ray);
+		if(!intersectsBox)
+		{
+			data.triangleIdx = -1;
+			return data;
+		}
 
 		for(uint32_t m = 0; m < m_Objects.size(); m++)
 		{
@@ -136,17 +142,19 @@ namespace Caustic
 			//uint32_t SVIOffset = 0;
 			uint32_t sceneMeshIndex = 0;
 
+			glm::vec3 boxMin(FLT_MAX);
+			glm::vec3 boxMax(FLT_MIN);
 
 			for (uint32_t obj = 0; obj < objectValueArray.Size(); obj++)
 			{
-				//Parse Material Index
+				// Parse Material Index
 				const rapidjson::Value& materialIdxValue = objectValueArray[obj].FindMember("material_index")->value;
 				assert(!materialIdxValue.IsNull() && materialIdxValue.IsInt());
 				auto matIdx = materialIdxValue.GetInt();
 
 				Mesh mesh = Mesh(matIdx, sceneMeshIndex);
 
-				//Parse Vertices
+				// Parse Vertices
 				const rapidjson::Value& verticesValue = objectValueArray[obj].FindMember("vertices")->value;
 				assert(!verticesValue.IsNull() && verticesValue.IsArray());
 				auto vertexValuesArray = verticesValue.GetArray();
@@ -154,10 +162,19 @@ namespace Caustic
 				for (uint32_t i = 0; i < vertexValuesArray.Size(); i += 3)
 				{
 					Vertex vertex(vertexValuesArray[i].GetFloat(), vertexValuesArray[i + 1].GetFloat(), vertexValuesArray[i + 2].GetFloat());
+					
+					boxMin.x = glm::min(boxMin.x, vertex.GetCoordinates().x);
+					boxMin.y = glm::min(boxMin.y, vertex.GetCoordinates().y);
+					boxMin.z = glm::min(boxMin.z, vertex.GetCoordinates().z);
+
+					boxMax.x = glm::max(boxMax.x, vertex.GetCoordinates().x);
+					boxMax.y = glm::max(boxMax.y, vertex.GetCoordinates().y);
+					boxMax.z = glm::max(boxMax.z, vertex.GetCoordinates().z);
+
 					mesh.PushVertex(vertex);
 				}
 
-				//Parse Triangle
+				// Parse Triangle
 				const rapidjson::Value& indicesValue = objectValueArray[obj].FindMember("triangles")->value;
 				assert(!indicesValue.IsNull() && indicesValue.IsArray());
 				auto indices = indicesValue.GetArray();
@@ -166,12 +183,12 @@ namespace Caustic
 
 				for (uint32_t i = 0; i < indices.Size(); i += 3)
 				{
-					//VI - Vertex Index in Mesh
+					// VI - Vertex Index in Mesh
 					uint32_t VI0 = indices[i].GetInt();
 					uint32_t VI1 = indices[i + 1].GetInt();
 					uint32_t VI2 = indices[i + 2].GetInt();
 					
-					//Push triangle the Mesh
+					// Push triangle the Mesh
 					Triangle triangle(VI0, VI1, VI2, mesh.GetVertices(), sceneMeshIndex);
 					mesh.PushTriangle(triangle);
 
@@ -182,10 +199,13 @@ namespace Caustic
 					meshTriangleIndex++;
 				}
 
-				//Push Mesh into the Scene
+				// Push Mesh into the Scene
 				m_Objects.push_back(mesh);
 				sceneMeshIndex++;
 			}
+
+			BoundingBox bBox(boxMin, boxMax);
+			m_BoundingBox = bBox;
 
 			for (Mesh& mesh : m_Objects)
 			{
