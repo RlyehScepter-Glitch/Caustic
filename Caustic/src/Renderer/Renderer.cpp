@@ -2,8 +2,10 @@
 
 #include <fstream>
 #include <iostream>
+#include <mutex>
 #include <thread>
 #include <algorithm>
+#include <queue>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
@@ -12,11 +14,16 @@ static const float shadowBias = 0.00001f;
 static const float reflectionBias = 0.0001f;
 static const float refractionBias = -0.0001f;
 static const uint32_t maxRayDepth = 10;
+std::mutex bucketLock;
+
+//For debug purposes only
 static const uint32_t regionWidth = 160;
 static const uint32_t regionHeight = 90;
 
 namespace Caustic
 {
+	void BucketThread(const Scene& scene, std::vector<std::vector<glm::vec3>>& image, std::queue<glm::vec2>& buckets, uint32_t bucketWidth, uint32_t bucketHeight);
+
 	void Renderer::GenerateImage(const Scene& scene, const std::string& fileName)
 	{
 		// Scene Settings
@@ -34,18 +41,37 @@ namespace Caustic
 		// Create a two-dimensional array to represent the image
 		std::vector<std::vector<glm::vec3>> image(sceneHeight, std::vector<glm::vec3>(sceneWidth));
 
-		// Create Thread Vector
-		std::vector<std::thread> threads;
+		// Checks how many threads the current cpu has available
+		uint32_t threadCount = std::thread::hardware_concurrency();
+		
+		// Creates bucket size based on the amount of threads available
+		const uint32_t bucketWidth = sceneWidth / 120;
+		const uint32_t bucketHeight = sceneHeight / 120;
 
-		// Generate Regions
-		for (uint32_t y = 0; y < sceneHeight; y += regionHeight)
+		// Generate Buckets
+		std::queue<glm::vec2> buckets;
+		for (uint32_t y = 0; y < sceneHeight; y += bucketHeight)
 		{
-			for (uint32_t x = 0; x < sceneWidth; x += regionWidth)
+			for (uint32_t x = 0; x < sceneWidth; x += bucketWidth)
 			{
-				threads.push_back(std::thread(GenerateRegion, std::ref(scene), std::ref(image), x, y));
+				buckets.push(glm::vec2(x, y));
 			}
 		}
 
+		// Create Thread Vector
+		std::vector<std::thread> threads;
+		
+		// Create Threads
+		for (uint32_t i = 0; i < threadCount; i++)
+		{
+			// Multithreaded Region Based Rendering Algorithm
+			//threads.push_back(std::thread(GenerateRegion, std::ref(scene), std::ref(image), x, y));
+
+			// Multithread Buckets Rendering Algorith
+			threads.push_back(std::thread(BucketThread, std::ref(scene), std::ref(image), std::ref(buckets), bucketWidth, bucketHeight));
+		}
+		
+		// Wait for threads to finish executing
 		for (uint32_t i = 0; i < threads.size(); i++)
 		{
 			threads[i].join();
@@ -72,6 +98,48 @@ namespace Caustic
 		for (uint32_t y = stY; y < stY + regionHeight; y++)
 		{
 			for (uint32_t x = stX; x < stX + regionWidth; x++)
+			{
+				// Ray Generation
+				Ray R = Renderer::GenerateCameraRay(x, y, scene);
+
+				// Trace Ray
+				IntersectionData data = scene.TraceRay(R);
+
+				// Shade Pixel
+				image[y][x] = Renderer::Shade(R, data, scene);
+			}
+		}
+	}
+
+	void BucketThread(const Scene& scene, std::vector<std::vector<glm::vec3>>& image, std::queue<glm::vec2>& buckets, uint32_t bucketWidth, uint32_t bucketHeight)
+	{
+		while (true)
+		{
+			std::unique_lock<std::mutex> lock(bucketLock);
+			
+			if(!buckets.empty())
+			{
+				glm::vec2 bucket = buckets.front();
+				buckets.pop();
+				lock.unlock();
+
+				Renderer::GenerateBucket(scene, image, bucket.x, bucket.y, bucketWidth, bucketHeight);
+			}
+			else
+			{
+				lock.unlock();
+				return;
+			}
+
+		}
+	}
+
+	void Renderer::GenerateBucket(const Scene& scene, std::vector<std::vector<glm::vec3>>& image, uint32_t stX, uint32_t stY, uint32_t bucketWidth, uint32_t bucketHeight)
+	{
+		// Fill in image data
+		for (uint32_t y = stY; y < stY + bucketHeight; y++)
+		{
+			for (uint32_t x = stX; x < stX + bucketWidth; x++)
 			{
 				// Ray Generation
 				Ray R = Renderer::GenerateCameraRay(x, y, scene);
