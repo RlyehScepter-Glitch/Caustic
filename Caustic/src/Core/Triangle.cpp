@@ -9,12 +9,40 @@ namespace Caustic
     constexpr double kEpsilon = 1e-8;
 
     //m_MeshIdx is set on creation of Triangle in Scene
-    Triangle::Triangle(uint32_t v0, uint32_t v1, uint32_t v2, const std::vector<Vertex>& vertices, const uint32_t& meshIdx)
+    Triangle::Triangle(uint32_t v0, uint32_t v1, uint32_t v2, const std::vector<Vertex>& vertices, const uint32_t& meshIdx, const uint32_t& triangleIdx)
         : m_V0(v0)
         , m_V1(v1)
         , m_V2(v2)
         , m_MeshIdx(meshIdx)
+        , m_Index(triangleIdx)
     {
+        glm::vec3 boxMin(FLT_MAX);
+        glm::vec3 boxMax(-FLT_MAX);
+
+        boxMin.x = glm::min(boxMin.x, vertices[m_V0].GetCoordinates().x);
+        boxMin.y = glm::min(boxMin.y, vertices[m_V0].GetCoordinates().y);
+        boxMin.z = glm::min(boxMin.z, vertices[m_V0].GetCoordinates().z);
+        boxMax.x = glm::max(boxMax.x, vertices[m_V0].GetCoordinates().x);
+        boxMax.y = glm::max(boxMax.y, vertices[m_V0].GetCoordinates().y);
+        boxMax.z = glm::max(boxMax.z, vertices[m_V0].GetCoordinates().z);
+
+        boxMin.x = glm::min(boxMin.x, vertices[m_V1].GetCoordinates().x);
+        boxMin.y = glm::min(boxMin.y, vertices[m_V1].GetCoordinates().y);
+        boxMin.z = glm::min(boxMin.z, vertices[m_V1].GetCoordinates().z);
+        boxMax.x = glm::max(boxMax.x, vertices[m_V1].GetCoordinates().x);
+        boxMax.y = glm::max(boxMax.y, vertices[m_V1].GetCoordinates().y);
+        boxMax.z = glm::max(boxMax.z, vertices[m_V1].GetCoordinates().z);
+
+        boxMin.x = glm::min(boxMin.x, vertices[m_V2].GetCoordinates().x);
+        boxMin.y = glm::min(boxMin.y, vertices[m_V2].GetCoordinates().y);
+        boxMin.z = glm::min(boxMin.z, vertices[m_V2].GetCoordinates().z);
+        boxMax.x = glm::max(boxMax.x, vertices[m_V2].GetCoordinates().x);
+        boxMax.y = glm::max(boxMax.y, vertices[m_V2].GetCoordinates().y);
+        boxMax.z = glm::max(boxMax.z, vertices[m_V2].GetCoordinates().z);
+
+        m_BoundingBox.SetMin(boxMin);
+        m_BoundingBox.SetMax(boxMax);
+
         m_TriangleNormal = glm::normalize(glm::cross(vertices[v1].GetCoordinates() - vertices[v0].GetCoordinates(), vertices[v2].GetCoordinates() - vertices[v0].GetCoordinates()));
         m_Area = m_TriangleNormal.length() / 2.0f;
         m_Color = glm::normalize(glm::vec3(glm::abs(vertices[v0].GetCoordinates().x + vertices[v1].GetCoordinates().y),

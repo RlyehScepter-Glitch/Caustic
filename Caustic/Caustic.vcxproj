@@ -86,7 +86,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Core\AccelerationTree.cpp" />
     <ClCompile Include="src\Core\BoundingBox.cpp" />
+    <ClCompile Include="src\Core\LeafNode.cpp" />
     <ClCompile Include="src\Core\Vertex.cpp" />
     <ClCompile Include="src\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Scene\Camera.cpp" />
@@ -100,7 +102,9 @@
     <ClCompile Include="src\Scene\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Core\AccelerationTree.h" />
     <ClInclude Include="src\Core\BoundingBox.h" />
+    <ClInclude Include="src\Core\LeafNode.h" />
     <ClInclude Include="src\Core\Vertex.h" />
     <ClInclude Include="src\Renderer\Renderer.h" />
     <ClInclude Include="src\Scene\Camera.h" />

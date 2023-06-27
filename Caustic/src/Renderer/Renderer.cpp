@@ -11,8 +11,8 @@
 
 static const uint32_t maxColorComponent = 255;
 static const float shadowBias = 0.00001f;
-static const float reflectionBias = 0.0001f;
-static const float refractionBias = -0.0001f;
+static const float reflectionBias = 0.00001f;
+static const float refractionBias = -0.00001f;
 static const uint32_t maxRayDepth = 10;
 std::mutex bucketLock;
 
@@ -103,7 +103,8 @@ namespace Caustic
 				Ray R = Renderer::GenerateCameraRay(x, y, scene);
 
 				// Trace Ray
-				IntersectionData data = scene.TraceRay(R);
+				//IntersectionData data = scene.TraceRay(R);
+				IntersectionData data = scene.AcceleratedTraceRay(R);
 
 				// Shade Pixel
 				image[y][x] = Renderer::Shade(R, data, scene);
@@ -145,7 +146,8 @@ namespace Caustic
 				Ray R = Renderer::GenerateCameraRay(x, y, scene);
 
 				// Trace Ray
-				IntersectionData data = scene.TraceRay(R);
+				//IntersectionData data = scene.TraceRay(R);
+				IntersectionData data = scene.AcceleratedTraceRay(R);
 
 				// Shade Pixel
 				image[y][x] = Renderer::Shade(R, data, scene);
@@ -268,7 +270,8 @@ namespace Caustic
 			glm::vec3 lightContribution(0.0f, 0.0f, 0.0f);
 
 			// Check if Shadow ray intersects anything
-			IntersectionData shadowData = scene.TraceRay(shadowRay, sphereRad);
+			//IntersectionData shadowData = scene.TraceRay(shadowRay, sphereRad);
+			IntersectionData shadowData = scene.AcceleratedTraceRay(shadowRay, sphereRad);
 			
 			if(shadowData.triangleIdx == -1)
 			{
@@ -293,7 +296,10 @@ namespace Caustic
 		glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
 		
 		Ray reflRay(reflOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
-		IntersectionData reflData = scene.TraceRay(reflRay);
+
+		//IntersectionData reflData = scene.TraceRay(reflRay);
+		IntersectionData reflData = scene.AcceleratedTraceRay(reflRay);
+
 		glm::vec3 reflectColor = Shade(reflRay, reflData, scene);
 
 		return reflectColor;
@@ -333,21 +339,42 @@ namespace Caustic
 			glm::vec3 refractOrigin = data.hitPoint + (N * refractionBias);
 			glm::vec3 refractDir = snellsLaw * I + (snellsLaw * NdotI - glm::sqrt(1.0f - k * k)) * N;
 			Ray refractRay(refractOrigin, refractDir, RayType::refractive, ray.GetDepth() + 1);
-			IntersectionData refractData = scene.TraceRay(refractRay);
+
+			//IntersectionData refractData = scene.TraceRay(refractRay);
+			IntersectionData refractData = scene.AcceleratedTraceRay(refractRay);
+
 			refractColor = Shade(refractRay, refractData, scene);
+
+			glm::vec3 reflectOrigin = data.hitPoint + (N * reflectionBias);
+			glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
+			Ray reflectRay(reflectOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
+
+			//IntersectionData reflectData = scene.TraceRay(reflectRay);
+			IntersectionData reflectData = scene.AcceleratedTraceRay(reflectRay);
+
+			glm::vec3 reflectColor = Shade(reflectRay, reflectData, scene);
+
+			float fresnel = 0.5f * glm::pow(1.0f + glm::dot(I, N), 5.0f);
+			//float fresnel = 0.5f * (1.0f + glm::dot(I, N));
+
+			glm::vec3 finalColor = fresnel * reflectColor + (1 - fresnel) * refractColor;
+			return finalColor;
 		}
+		else
+		{
+			glm::vec3 reflectOrigin = data.hitPoint + (N * reflectionBias);
+			glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
+			Ray reflectRay(reflectOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
 
-		glm::vec3 reflectOrigin = data.hitPoint + (N * reflectionBias);
-		glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
-		Ray reflectRay(reflectOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
-		IntersectionData reflectData = scene.TraceRay(reflectRay);
-		glm::vec3 reflectColor = Shade(reflectRay, reflectData, scene);
+			//IntersectionData reflectData = scene.TraceRay(reflectRay);
+			IntersectionData reflectData = scene.AcceleratedTraceRay(reflectRay);
 
-		float fresnel = 0.5f * glm::pow(1.0f + glm::dot(I, N), 5.0f);
-		//float fresnel = 0.5f * (1.0f + glm::dot(I, N));
+			glm::vec3 reflectColor = Shade(reflectRay, reflectData, scene);
 
-		glm::vec3 finalColor = fresnel * reflectColor + (1 - fresnel) * refractColor;
-		return finalColor;
+			glm::vec3 finalColor = reflectColor;
+			return finalColor;
+		}
+		
 
 	}
 	

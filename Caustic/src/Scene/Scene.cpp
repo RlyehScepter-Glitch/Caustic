@@ -4,6 +4,7 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
+#include <stack>
 
 namespace Caustic
 {
@@ -30,13 +31,6 @@ namespace Caustic
 		float t = 0.0f;
 		float u = 0.0f;
 		float v = 0.0f;
-
-		bool intersectsBox = m_BoundingBox.IntersectsBox(ray);
-		if(!intersectsBox)
-		{
-			data.triangleIdx = -1;
-			return data;
-		}
 
 		for(uint32_t m = 0; m < m_Objects.size(); m++)
 		{
@@ -75,6 +69,90 @@ namespace Caustic
 			data.interpolatedVertexNormal = glm::normalize(m_Objects[meshIndex].GetVertices()[triangle.GetVertex0()].GetVertexNormal() * (1 - uNear - vNear) +
 											m_Objects[meshIndex].GetVertices()[triangle.GetVertex1()].GetVertexNormal() * uNear +
 											m_Objects[meshIndex].GetVertices()[triangle.GetVertex2()].GetVertexNormal() * vNear);
+			data.UV = { uNear, vNear };
+			data.objectIdx = meshIndex;
+			data.materialIdx = m_Objects[meshIndex].GetMaterialIdx();
+			data.materialIOR = materialIOR;
+			data.triangleIdx = triIndex;
+		}
+
+		return data;
+	}
+
+	IntersectionData Scene::AcceleratedTraceRay(const Ray& ray, float nearest) const
+	{
+		IntersectionData data;
+
+		bool intersected = false;
+		uint32_t meshIndex = 0;
+		uint32_t triIndex = 0;
+		float materialIOR = 1.0f;
+		float tNear = nearest;
+		float uNear = FLT_MAX;
+		float vNear = FLT_MAX;
+		float t = 0.0f;
+		float u = 0.0f;
+		float v = 0.0f;
+
+		std::stack<int> nodeIndicesToCheck;
+		nodeIndicesToCheck.push(0);
+		while (nodeIndicesToCheck.size() > 0)
+		{
+			uint32_t currentNodeIdxToCheck = nodeIndicesToCheck.top();
+			nodeIndicesToCheck.pop();
+			LeafNode currentNode = m_AccelerationTree.GetLeafNodes()[currentNodeIdxToCheck];
+			if (currentNode.GetBoundingBox().IntersectsBox(ray))
+			{
+				if (currentNode.GetTriangles().size() > 0)
+				{
+					for (const Triangle& triangle : currentNode.GetTriangles())
+					{
+						const Mesh& mesh = m_Objects[triangle.GetMeshIndex()];
+
+						if ((ray.GetType() == RayType::camera || ray.GetType() == RayType::reflection || ray.GetType() == RayType::refractive) && triangle.Intersect(ray, t, u, v, mesh.GetVertices()) && t <= tNear && t > 0)
+						{
+							tNear = t;
+							uNear = u;
+							vNear = v;
+							meshIndex = triangle.GetMeshIndex();
+							triIndex = triangle.GetIndex();
+							intersected = true;
+						}
+						else if (ray.GetType() == RayType::shadow && m_Materials[mesh.GetMaterialIdx()].GetMaterialType() != MaterialType::refractive && triangle.Intersect(ray, t, u, v, mesh.GetVertices()) && t < tNear)
+						{
+							tNear = t;
+							meshIndex = triangle.GetMeshIndex();
+							triIndex = triangle.GetIndex();
+							intersected = true;
+							break;
+						}
+					}
+				}
+				else
+				{
+					if(currentNode.GetChildAIdx() != -1)
+					{
+						nodeIndicesToCheck.push(currentNode.GetChildAIdx());
+					}
+
+					if(currentNode.GetChildBIdx() != -1)
+					{
+						nodeIndicesToCheck.push(currentNode.GetChildBIdx());
+					}
+				}
+			}
+
+		}
+
+		if (intersected)
+		{
+			const Triangle& triangle = m_Objects[meshIndex].GetTriangles()[triIndex];
+			data.hitPoint = ray.GetOrigin() + ray.GetDirection() * tNear;
+			data.hitPointNormal = triangle.GetTriangleNormal();
+			//WRONG?
+			data.interpolatedVertexNormal = glm::normalize(m_Objects[meshIndex].GetVertices()[triangle.GetVertex0()].GetVertexNormal() * (1 - uNear - vNear) +
+				m_Objects[meshIndex].GetVertices()[triangle.GetVertex1()].GetVertexNormal() * uNear +
+				m_Objects[meshIndex].GetVertices()[triangle.GetVertex2()].GetVertexNormal() * vNear);
 			data.UV = { uNear, vNear };
 			data.objectIdx = meshIndex;
 			data.materialIdx = m_Objects[meshIndex].GetMaterialIdx();
@@ -143,7 +221,9 @@ namespace Caustic
 			uint32_t sceneMeshIndex = 0;
 
 			glm::vec3 boxMin(FLT_MAX);
-			glm::vec3 boxMax(FLT_MIN);
+			glm::vec3 boxMax(-FLT_MAX);
+
+			std::vector<Triangle> triangles;
 
 			for (uint32_t obj = 0; obj < objectValueArray.Size(); obj++)
 			{
@@ -174,7 +254,7 @@ namespace Caustic
 					mesh.PushVertex(vertex);
 				}
 
-				// Parse Triangle
+				// Parse Triangles
 				const rapidjson::Value& indicesValue = objectValueArray[obj].FindMember("triangles")->value;
 				assert(!indicesValue.IsNull() && indicesValue.IsArray());
 				auto indices = indicesValue.GetArray();
@@ -189,7 +269,8 @@ namespace Caustic
 					uint32_t VI2 = indices[i + 2].GetInt();
 					
 					// Push triangle the Mesh
-					Triangle triangle(VI0, VI1, VI2, mesh.GetVertices(), sceneMeshIndex);
+					Triangle triangle(VI0, VI1, VI2, mesh.GetVertices(), sceneMeshIndex, meshTriangleIndex);
+					triangles.push_back(triangle);
 					mesh.PushTriangle(triangle);
 
 					mesh.PushTriangleIndexToVertex(VI0, meshTriangleIndex);
@@ -206,6 +287,8 @@ namespace Caustic
 
 			BoundingBox bBox(boxMin, boxMax);
 			m_BoundingBox = bBox;
+			m_AccelerationTree.AddNode(m_BoundingBox, -1, -1);
+			m_AccelerationTree.BuildAccelerationTree(0, 0, triangles);
 
 			for (Mesh& mesh : m_Objects)
 			{

@@ -8,6 +8,7 @@
 #include "Material.h"
 #include "Core/Vertex.h"
 #include "Core/Triangle.h"
+#include "Core/AccelerationTree.h"
 
 #include <vector>
 #include <glm/glm.hpp>
@@ -33,14 +34,15 @@ namespace Caustic
 		// Constructor
 		Scene(const std::string& sceneFileName);
 
+		IntersectionData TraceRay(const Ray& ray, float tNear = FLT_MAX) const;
+		IntersectionData AcceleratedTraceRay(const Ray& ray, float tNear = FLT_MAX) const;
+
 		//Getters
 		const Camera& GetCamera() const { return m_Camera; }
 		const Settings& GetSettings() const { return m_Settings; }
 		const std::vector<Mesh>& GetObjects() const { return m_Objects; }
 		const std::vector<Light>& GetLights() const { return m_Lights; }
 		const std::vector<Material>& GetMaterials() const { return m_Materials; }
-
-		IntersectionData TraceRay(const Ray& ray, float tNear = FLT_MAX) const;
 	private:
 		void ParseSceneFile(const std::string& sceneFileName);
 	private:
@@ -51,5 +53,6 @@ namespace Caustic
 		std::vector<Material> m_Materials;
 	public:
 		BoundingBox m_BoundingBox;
+		AccelerationTree m_AccelerationTree;
 	};
 }

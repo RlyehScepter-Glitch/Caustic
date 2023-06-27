@@ -2,6 +2,7 @@
 
 #include "Ray.h"
 #include "Vertex.h"
+#include "BoundingBox.h"
 
 #include <memory>
 #include <glm/glm.hpp>
@@ -11,7 +12,7 @@ namespace Caustic
     class Triangle 
     {
     public:
-        Triangle(uint32_t v0, uint32_t v1, uint32_t v2, const std::vector<Vertex>& vertices, const uint32_t& meshIdx);
+        Triangle(uint32_t v0, uint32_t v1, uint32_t v2, const std::vector<Vertex>& vertices, const uint32_t& meshIdx, const uint32_t& triangleIdx);
 
         bool Intersect(const Ray& ray, float& t, float& u, float& v, const std::vector<Vertex>& vertices) const;
 
@@ -19,6 +20,8 @@ namespace Caustic
         const uint32_t& GetVertex1() const { return m_V1; }
         const uint32_t& GetVertex2() const { return m_V2; }
         const uint32_t& GetMeshIndex() const { return m_MeshIdx; }
+        const uint32_t& GetIndex() const { return m_Index; }
+        const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
         const glm::vec3& GetTriangleNormal() const { return m_TriangleNormal; }
         const glm::vec3& GetColor() const { return m_Color; }
 
@@ -27,6 +30,8 @@ namespace Caustic
         uint32_t m_V1;  // Index of Second vertex
         uint32_t m_V2;  // Index of Third vertex
         uint32_t m_MeshIdx;  // Index of the Mesh the Triangle belongs to
+        uint32_t m_Index;  // Index of the Triangle inside the Mesh
+        BoundingBox m_BoundingBox; // The Bounding Box of the Triangle
         glm::vec3 m_TriangleNormal;  // Surface normal
         glm::vec3 m_Color = { 1.0f, 1.0f, 1.0f }; // Color | Might remove later;
         float m_Area;

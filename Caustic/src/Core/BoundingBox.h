@@ -15,7 +15,12 @@ namespace Caustic
 		const glm::vec3& GetMin() const { return m_BoxMin; }
 		const glm::vec3& GetMax() const { return m_BoxMax; }
 
+		void SetMin(const glm::vec3& boxMin);
+		void SetMax(const glm::vec3& boxMax);
+
 		const bool IntersectsBox(const Ray& ray) const;
+		static const bool BoxesIntersection(const BoundingBox& boxA, const BoundingBox& boxB);
+		const void Split(uint32_t axisIdx, BoundingBox& boxA, BoundingBox& boxB) const;
 
 	private:
 		glm::vec3 m_BoxMin;
