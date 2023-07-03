@@ -6,7 +6,7 @@
 int main() 
 {
 	// Create Scene
-	Caustic::Scene scene("resources/scene1.crtscene");
+	Caustic::Scene scene("resources/scene0.crtscene");
 
 	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 

@@ -229,8 +229,11 @@ namespace Caustic
 			{
 				// Parse Material Index
 				const rapidjson::Value& materialIdxValue = objectValueArray[obj].FindMember("material_index")->value;
-				assert(!materialIdxValue.IsNull() && materialIdxValue.IsInt());
-				auto matIdx = materialIdxValue.GetInt();
+				int matIdx = 0;
+				if(!materialIdxValue.IsNull() && materialIdxValue.IsInt())
+				{
+					matIdx = materialIdxValue.GetInt();
+				}
 
 				Mesh mesh = Mesh(matIdx, sceneMeshIndex);
 

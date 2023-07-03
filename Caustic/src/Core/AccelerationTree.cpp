@@ -60,7 +60,6 @@ namespace Caustic
 
 		if(childATriangles.size() > 0)
 		{
-			//PROBLEM HERE
 			this->AddNode(currentNodeIdx, BoxA, -1, -1);
 			currentNodeIdx += 1;
 			m_LeafNodes[parentIdx].SetChildAIdx(currentNodeIdx);

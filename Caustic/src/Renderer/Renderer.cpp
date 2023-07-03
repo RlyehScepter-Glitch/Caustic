@@ -193,7 +193,21 @@ namespace Caustic
 			return finalColor;
 		}
 
-		Material mat = scene.GetMaterials()[data.materialIdx];
+		Material mat;
+
+		if(scene.GetMaterials().size() > 0)
+		{
+			mat = scene.GetMaterials()[data.materialIdx];
+		}
+		else
+		{
+			float u = data.UV.x;
+			float v = data.UV.y;
+			float w = 1 - data.UV.x - data.UV.y;
+			glm::vec3 triangleColor(u, v, w);
+			finalColor = triangleColor;
+			return finalColor;
+		}
 
 		if(mat.GetMaterialType() == MaterialType::diffuse)
 		{
@@ -209,7 +223,6 @@ namespace Caustic
 		}
 		else if (mat.GetMaterialType() == MaterialType::constant)
 		{
-			//TBI
 			finalColor = ShadeConstant(ray, data, scene);
 		}
 		else
