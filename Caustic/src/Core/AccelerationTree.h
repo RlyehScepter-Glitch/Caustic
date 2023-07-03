@@ -21,6 +21,6 @@ namespace Caustic
 		const std::vector<LeafNode>& GetLeafNodes() const { return m_LeafNodes; }
 	private:
 		std::vector<LeafNode> m_LeafNodes;
-		const uint32_t m_MaxBoxTriangleCount = 20;
+		const uint32_t m_MaxBoxTriangleCount = 50;
 	};
 }

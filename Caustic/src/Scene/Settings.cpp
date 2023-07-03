@@ -23,6 +23,21 @@ namespace Caustic
 		m_Height = height;
 	}
 
+	void Settings::SetGI(bool gi)
+	{
+		m_GlobalIllumination = gi;
+	}
+
+	void Settings::SetReflections(bool refl)
+	{
+		m_Reflections = refl;
+	}
+
+	void Settings::SetRefractions(bool refract)
+	{
+		m_Refractions = refract;
+	}
+
 	void Settings::UpdateAspectRatio()
 	{
 		m_AspectRatio = (float)m_Width / (float)m_Height;

@@ -23,6 +23,9 @@ namespace Caustic
 		void SetBackgroundColor(const glm::vec3& bgColor);
 		void SetWidth(uint32_t width);
 		void SetHeight(uint32_t height);
+		void SetGI(bool gi);
+		void SetReflections(bool refl);
+		void SetRefractions(bool refract);
 
 		void UpdateAspectRatio();
 
@@ -30,5 +33,8 @@ namespace Caustic
 		glm::vec3 m_BackgroundColor = { 0.0f, 0.0f, 0.0f };
 		uint32_t m_Width = 1920, m_Height = 1080;
 		float m_AspectRatio = 16.0f / 9.0f;
+		bool m_GlobalIllumination = false;
+		bool m_Reflections = false;
+		bool m_Refractions = false;
 	};
 }

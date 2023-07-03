@@ -173,12 +173,12 @@ namespace Caustic
 		const rapidjson::Value& settingsValue = doc.FindMember("settings")->value;
 		if(!settingsValue.IsNull() && settingsValue.IsObject())
 		{
-			//Parse Color value
+			// Parse Color value
 			const rapidjson::Value& colorValue = settingsValue.FindMember("background_color")->value;
-			assert(!colorValue.IsNull() && settingsValue.IsObject());
+			assert(!colorValue.IsNull() && colorValue.IsObject());
 			m_Settings.SetBackgroundColor(LoadVector(colorValue.GetArray()));
 
-			//Parse image Width and Height values
+			// Parse image Width and Height values
 			const rapidjson::Value& imageSettignsValue = settingsValue.FindMember("image_settings")->value;
 			if(!imageSettignsValue.IsNull() && imageSettignsValue.IsObject())
 			{
@@ -189,6 +189,21 @@ namespace Caustic
 				m_Settings.SetHeight(heightValue.GetFloat());
 				m_Settings.UpdateAspectRatio();
 			}
+
+			// Parse Global Illumination
+			const rapidjson::Value& giValue = settingsValue.FindMember("gi_on")->value;
+			assert(!giValue.IsNull() && giValue.IsBool());
+			m_Settings.SetGI(giValue.GetBool());
+
+			// Parse Reflections
+			const rapidjson::Value& reflectValue = settingsValue.FindMember("reflections_on")->value;
+			assert(!reflectValue.IsNull() && reflectValue.IsBool());
+			m_Settings.SetReflections(reflectValue.GetBool());
+
+			// Parse Refractions
+			const rapidjson::Value& refractValue = settingsValue.FindMember("refractions_on")->value;
+			assert(!refractValue.IsNull() && refractValue.IsBool());
+			m_Settings.SetRefractions(refractValue.GetBool());
 		}
 
 		//--------------------------------------------------------------------//
@@ -351,13 +366,21 @@ namespace Caustic
 				assert(!shadingValue.IsNull() && shadingValue.IsBool());
 				bool smoothShading = shadingValue.GetBool();
 
+				//Parse Backface Culling
+				const rapidjson::Value& cullingValue = materialsValueArray[material].FindMember("back_face_culling")->value;
+				bool backfaceCulling = true;
+				if(!cullingValue.IsNull() && cullingValue.IsBool())
+				{
+					backfaceCulling = cullingValue.GetBool();
+				}
+
 				//Parse IOR
 				float ior = 1.0f;
 				const rapidjson::Value& iorValue = materialsValueArray[material].FindMember("ior")->value;
 				if(!iorValue.IsNull() && iorValue.IsBool())
 					ior = iorValue.GetFloat();
 
-				Material mat(type, albedo, smoothShading, ior);
+				Material mat(type, albedo, smoothShading, backfaceCulling, ior);
 
 				m_Materials.push_back(mat);
 			}
