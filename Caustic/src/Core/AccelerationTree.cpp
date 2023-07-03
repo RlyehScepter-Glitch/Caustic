@@ -1,7 +1,6 @@
 #include "AccelerationTree.h"
 
 static const uint32_t AxisCount = 3;
-static uint32_t currentNodeIdx = 0;
 
 namespace Caustic
 {
@@ -60,18 +59,16 @@ namespace Caustic
 
 		if(childATriangles.size() > 0)
 		{
-			this->AddNode(currentNodeIdx, BoxA, -1, -1);
-			currentNodeIdx += 1;
-			m_LeafNodes[parentIdx].SetChildAIdx(currentNodeIdx);
-			BuildAccelerationTree(currentNodeIdx, depth + 1, childATriangles);
+			this->AddNode(m_LeafNodes.size() - 1, BoxA, -1, -1);
+			m_LeafNodes[parentIdx].SetChildAIdx(m_LeafNodes.size() - 1);
+			BuildAccelerationTree(m_LeafNodes.size() - 1, depth + 1, childATriangles);
 		}
 		
 		if (childBTriangles.size() > 0)
 		{
-			this->AddNode(currentNodeIdx, BoxB, -1, -1);
-			currentNodeIdx += 1;
-			m_LeafNodes[parentIdx].SetChildBIdx(currentNodeIdx);
-			BuildAccelerationTree(currentNodeIdx, depth + 1, childBTriangles);
+			this->AddNode(m_LeafNodes.size() - 1, BoxB, -1, -1);
+			m_LeafNodes[parentIdx].SetChildBIdx(m_LeafNodes.size() - 1);
+			BuildAccelerationTree(m_LeafNodes.size() - 1, depth + 1, childBTriangles);
 		}
 
 	}
