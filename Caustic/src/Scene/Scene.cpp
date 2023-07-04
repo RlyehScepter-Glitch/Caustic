@@ -109,7 +109,7 @@ namespace Caustic
 					{
 						const Mesh& mesh = m_Objects[triangle.GetMeshIndex()];
 
-						if ((ray.GetType() == RayType::camera || ray.GetType() == RayType::reflection || ray.GetType() == RayType::refractive) && triangle.Intersect(ray, t, u, v, mesh.GetVertices()) && t <= tNear && t > 0)
+						if (ray.GetType() != RayType::shadow && triangle.Intersect(ray, t, u, v, mesh.GetVertices()) && t <= tNear && t > 0)
 						{
 							tNear = t;
 							uNear = u;
@@ -149,7 +149,6 @@ namespace Caustic
 			const Triangle& triangle = m_Objects[meshIndex].GetTriangles()[triIndex];
 			data.hitPoint = ray.GetOrigin() + ray.GetDirection() * tNear;
 			data.hitPointNormal = triangle.GetTriangleNormal();
-			//WRONG?
 			data.interpolatedVertexNormal = glm::normalize(m_Objects[meshIndex].GetVertices()[triangle.GetVertex0()].GetVertexNormal() * (1 - uNear - vNear) +
 				m_Objects[meshIndex].GetVertices()[triangle.GetVertex1()].GetVertexNormal() * uNear +
 				m_Objects[meshIndex].GetVertices()[triangle.GetVertex2()].GetVertexNormal() * vNear);

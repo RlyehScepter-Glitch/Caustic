@@ -70,7 +70,7 @@ namespace Caustic
         // If the determinant is negative, the triangle is 'back facing.'
         // If the determinant is close to 0, the ray misses the triangle
         //CameraRay
-        if (det <= kEpsilon && (ray.GetType() == RayType::camera || ray.GetType() == RayType::reflection))
+        if (det < kEpsilon && ray.GetType() != RayType::shadow)
         {
             return false;
         }

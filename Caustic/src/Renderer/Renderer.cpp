@@ -11,8 +11,8 @@
 
 static const uint32_t maxColorComponent = 255;
 static const float shadowBias = 0.00001f;
-static const float reflectionBias = 0.00001f;
-static const float refractionBias = -0.00001f;
+static const float reflectionBias = 0.000001f;
+static const float refractionBias = -1.5f;
 static const uint32_t maxRayDepth = 10;
 std::mutex bucketLock;
 
@@ -360,7 +360,7 @@ namespace Caustic
 
 			glm::vec3 reflectOrigin = data.hitPoint + (N * reflectionBias);
 			glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
-			Ray reflectRay(reflectOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
+			Ray reflectRay(reflectOrigin, -reflDir, RayType::reflection, ray.GetDepth() + 1);
 
 			//IntersectionData reflectData = scene.TraceRay(reflectRay);
 			IntersectionData reflectData = scene.AcceleratedTraceRay(reflectRay);
@@ -377,7 +377,7 @@ namespace Caustic
 		{
 			glm::vec3 reflectOrigin = data.hitPoint + (N * reflectionBias);
 			glm::vec3 reflDir = I - 2 * glm::dot(I, N) * N;
-			Ray reflectRay(reflectOrigin, reflDir, RayType::reflection, ray.GetDepth() + 1);
+			Ray reflectRay(reflectOrigin, -reflDir, RayType::reflection, ray.GetDepth() + 1);
 
 			//IntersectionData reflectData = scene.TraceRay(reflectRay);
 			IntersectionData reflectData = scene.AcceleratedTraceRay(reflectRay);
