@@ -2,8 +2,8 @@
 
 namespace Caustic
 {
-	Settings::Settings(const glm::vec3& backgroundColor, uint32_t width, uint32_t height)
-		:m_BackgroundColor(backgroundColor), m_Width(width), m_Height(height)
+	Settings::Settings(const glm::vec3& backgroundColor, uint32_t width, uint32_t height, uint32_t bucketSize)
+		:m_BackgroundColor(backgroundColor), m_Width(width), m_Height(height), m_BucketSize(bucketSize)
 	{
 		m_AspectRatio = (float)width / (float)height;
 	}
@@ -21,6 +21,11 @@ namespace Caustic
 	void Settings::SetHeight(uint32_t height)
 	{
 		m_Height = height;
+	}
+
+	void Settings::BucketSize(uint32_t size)
+	{
+		m_BucketSize = size;
 	}
 
 	void Settings::SetGI(bool gi)

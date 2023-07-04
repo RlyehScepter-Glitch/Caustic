@@ -183,10 +183,15 @@ namespace Caustic
 			{
 				const rapidjson::Value& widthValue = imageSettignsValue.FindMember("width")->value;
 				const rapidjson::Value& heightValue = imageSettignsValue.FindMember("height")->value;
+				const rapidjson::Value& bucketValue = imageSettignsValue.FindMember("bucket_size")->value;
 				assert(!widthValue.IsNull() && widthValue.IsInt() && !heightValue.IsNull() && heightValue.IsInt());
-				m_Settings.SetWidth(widthValue.GetFloat());
-				m_Settings.SetHeight(heightValue.GetFloat());
+				m_Settings.SetWidth(widthValue.GetInt());
+				m_Settings.SetHeight(heightValue.GetInt());
 				m_Settings.UpdateAspectRatio();
+				if(!bucketValue.IsNull() && bucketValue.IsInt())
+				{
+					m_Settings.SetBucketSize(bucketValue.GetInt());
+				}
 			}
 
 			// Parse Global Illumination
