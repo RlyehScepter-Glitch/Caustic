@@ -7,13 +7,16 @@
 #include <algorithm>
 #include <queue>
 #include <glm/glm.hpp>
+#include <glm/gtc/random.hpp>
 #include <glm/gtc/constants.hpp>
 
 static const uint32_t maxColorComponent = 255;
-static const float shadowBias = 0.00001f;
+static const float shadowBias = 0.001f;
 static const float reflectionBias = 0.000001f;
-static const float refractionBias = -1.5f;
+static const float refractionBias = -1.0f;
+static const float rayHitBias = 0.000001f;
 static const uint32_t maxRayDepth = 10;
+static const uint32_t maxDiffuseDepth = 2;
 std::mutex bucketLock;
 
 //For debug purposes only
@@ -45,8 +48,8 @@ namespace Caustic
 		uint32_t threadCount = std::thread::hardware_concurrency();
 		
 		// Creates bucket size based on the amount of threads available
-		const uint32_t bucketWidth = sceneWidth / 60;
-		const uint32_t bucketHeight = sceneHeight / 60;
+		const uint32_t bucketWidth = sceneWidth / sceneSettings.GetBucketSize();
+		const uint32_t bucketHeight = sceneHeight / sceneSettings.GetBucketSize();
 
 		// Generate Buckets
 		std::queue<glm::vec2> buckets;
@@ -211,7 +214,14 @@ namespace Caustic
 
 		if(mat.GetMaterialType() == MaterialType::diffuse)
 		{
-			finalColor = ShadeDiffuse(ray, data, scene);
+			if(ray.GetDepth() >= maxDiffuseDepth)
+			{
+				finalColor = ShadeDiffuse(ray, data, scene);
+			}
+			else
+			{
+				finalColor = ShadeDiffuseReflection(ray, data, scene);
+			}
 		}
 		else if (mat.GetMaterialType() == MaterialType::reflective)
 		{
@@ -235,16 +245,18 @@ namespace Caustic
 	
 	glm::vec3 Renderer::ShadeDiffuse(const Ray& ray, const IntersectionData& data, const Scene& scene)
 	{
-		float u = data.UV.x;
-		float v = data.UV.y;
-		float w = 1 - data.UV.x - data.UV.y;
-
 		// Color Based on UV
+		//float u = data.UV.x;
+		//float v = data.UV.y;
+		//float w = 1 - data.UV.x - data.UV.y;
 		//glm::vec3 triangleColor(u, v, w);
+				
 		// Flat Color
 		//glm::vec3 triangleColor(0.8f, 0.0f, 0.3f);
+		
 		// Internal Triangle Color
 		//glm::vec3 triangleColor = scene.GetObjects()[data.objectIdx].GetTriangles()[data.triangleIdx].GetColor();
+		
 		// Material Color
 		glm::vec3 triangleColor = scene.GetMaterials()[data.materialIdx].GetAlbedo();
 
@@ -295,6 +307,93 @@ namespace Caustic
 		}
 
 		return diffuseColor;
+	}
+
+	glm::vec3 Renderer::ShadeDiffuseReflection(const Ray& ray, const IntersectionData& data, const Scene& scene)
+	{
+		int reflectionCount = scene.GetSettings().GetDiffuseReflectionsCount();
+		glm::vec3 diffuseReflectionColor(0.0f, 0.0f, 0.0f);
+		glm::vec3 triangleColor = scene.GetMaterials()[data.materialIdx].GetAlbedo();
+
+		for (uint32_t i = 0; i < reflectionCount; i++)
+		{
+			// Construct Local Hit Matrix
+			glm::vec3 rightAxis = glm::normalize(glm::cross(ray.GetDirection(), data.hitPointNormal));
+			glm::vec3 upAxis = data.hitPointNormal;
+			glm::vec3 forwardAxis = glm::cross(rightAxis, upAxis);
+			glm::mat3 localHitMatrix(rightAxis, upAxis, forwardAxis);
+
+			// Generate random angle [0, 180] in XY plane
+			float randAngleXY = glm::pi<float>() * glm::linearRand(0.0f, 1.0f);
+			// Generate random vector in XY plane
+			glm::vec3 randVecXY(glm::cos(randAngleXY), glm::sin(randAngleXY), 0);
+
+			// Generate random angle [0, 360] in XZ plane
+			float randAngleXZ = 2 * glm::pi<float>() * glm::linearRand(0.0f, 1.0f);
+
+			// Construct rotation matrix around Y
+			glm::mat3 rotateAroundY(glm::cos(randAngleXZ), 0, -glm::sin(randAngleXZ),
+									0,					   1,					 0,
+									glm::sin(randAngleXZ), 0, glm::cos(randAngleXZ));
+
+			// Rotate XY Vector
+			glm::vec3 randVecXYRotated = randVecXY * rotateAroundY;
+
+			glm::vec3 diffReflRayDir = randVecXYRotated * localHitMatrix;
+			glm::vec3 diffReflRayOrigin = data.hitPoint + (data.hitPointNormal * rayHitBias);
+			Ray diffReflRay(diffReflRayOrigin, diffReflRayDir, RayType::reflection, ray.GetDepth() + 1);
+
+			IntersectionData diffReflData = scene.AcceleratedTraceRay(diffReflRay);
+			glm::vec3 diffReflColor = Shade(diffReflRay, diffReflData, scene);
+			diffuseReflectionColor += diffReflColor;
+		}
+
+		for (const Caustic::Light& light : scene.GetLights())
+		{
+			glm::vec3 lightDir;
+			glm::vec3 originOffset;
+			float cosLaw;
+			float sphereRad;
+
+			if (scene.GetMaterials()[data.materialIdx].SmoothShading())
+			{
+				lightDir = light.GetPosition() - data.hitPoint;
+				sphereRad = glm::length(lightDir);
+				lightDir = glm::normalize(lightDir);
+				cosLaw = glm::max(0.0f, glm::dot(lightDir, data.interpolatedVertexNormal));
+				originOffset = data.hitPoint + data.interpolatedVertexNormal * shadowBias;
+			}
+			else
+			{
+				lightDir = light.GetPosition() - data.hitPoint;
+				sphereRad = glm::length(lightDir);
+				lightDir = glm::normalize(lightDir);
+				cosLaw = glm::max(0.0f, glm::dot(lightDir, data.hitPointNormal));
+				originOffset = data.hitPoint + data.hitPointNormal * shadowBias;
+			}
+
+			float lightIntensity = light.GetIntensity();
+
+			Caustic::Ray shadowRay(originOffset, lightDir, RayType::shadow);
+
+			float sphereArea = 4.0f * glm::pi<float>() * sphereRad * sphereRad;
+
+			glm::vec3 lightContribution(0.0f, 0.0f, 0.0f);
+
+			// Check if Shadow ray intersects anything
+			//IntersectionData shadowData = scene.TraceRay(shadowRay, sphereRad);
+			IntersectionData shadowData = scene.AcceleratedTraceRay(shadowRay, sphereRad);
+
+			if (shadowData.triangleIdx == -1)
+			{
+				lightContribution = lightIntensity / sphereArea * triangleColor * cosLaw;
+			}
+
+			diffuseReflectionColor += lightContribution;
+		}
+
+		diffuseReflectionColor /= reflectionCount + 1;
+		return diffuseReflectionColor;
 	}
 
 	glm::vec3 Renderer::ShadeReflective(const Ray& ray, const IntersectionData& data, const Scene& scene)

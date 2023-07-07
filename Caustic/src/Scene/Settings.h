@@ -11,7 +11,7 @@ namespace Caustic
 		//Default
 		Settings() = default;
 		//Takes Background Color, Width and Height
-		Settings(const glm::vec3& backgroundColor, uint32_t width, uint32_t height, uint32_t bucketSize);
+		Settings(const glm::vec3& backgroundColor, uint32_t width, uint32_t height);
 
 		//Getters
 		const glm::vec3& GetBackgroundColor() const { return m_BackgroundColor; }
@@ -19,6 +19,7 @@ namespace Caustic
 		const uint32_t& GetHeight() const  { return m_Height; }
 		const uint32_t& GetBucketSize() const  { return m_BucketSize; }
 		const float& GetAspectRatio() const  { return m_AspectRatio; }
+		const uint32_t& GetDiffuseReflectionsCount() const  { return m_DiffuseReflectionsCount; }
 
 		//Setters
 		void SetBackgroundColor(const glm::vec3& bgColor);
@@ -39,5 +40,6 @@ namespace Caustic
 		bool m_GlobalIllumination = false;
 		bool m_Reflections = false;
 		bool m_Refractions = false;
+		uint32_t m_DiffuseReflectionsCount = 100;
 	};
 }
